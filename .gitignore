@@ -1,0 +1,11 @@
+# Photon
+VR-demo/Assets/Photon/
+VR-demo/Assets/Photon*
+
+# library
+VR-demo/Library
+
+# vs
+VR-demo/.vs/
+*.csproj
+*.sln
