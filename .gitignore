@@ -2,6 +2,14 @@
 VR-demo/Assets/Photon/
 VR-demo/Assets/Photon*
 
+# Enviroment
+VR-demo/Assets/NaturePackLite/
+VR-demo/Assets/NaturePackLite*
+
+# Player Model
+VR-demo/Assets/Supercyan/
+VR-demo/Assets/Supercyan*
+
 # library
 VR-demo/Library
 
