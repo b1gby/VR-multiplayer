@@ -1,7 +1,9 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
+using Photon.Pun;
+using Photon.Pun.Demo.PunBasics;
 
-public class PlayerController : MonoBehaviour
+public class PlayerController : MonoBehaviourPun
 {
     public void Initialize(GameObject character)
     {
@@ -34,11 +36,33 @@ public class PlayerController : MonoBehaviour
     
     private List<Collider> m_collisions = new List<Collider>();
 
+    
+
     void Awake()
     {
         if(!m_animator) { gameObject.GetComponent<Animator>(); }
         if(!m_rigidBody) { gameObject.GetComponent<Animator>(); }
     }
+
+    void Start()
+    {
+        CameraWork _cameraWork = this.gameObject.GetComponent<CameraWork>();
+
+
+        if (_cameraWork != null)
+        {
+            if (photonView.IsMine)
+            {
+                _cameraWork.OnStartFollowing();
+            }
+        }
+        else
+        {
+            Debug.LogError("<Color=Red><a>Missing</a></Color> CameraWork Component on playerPrefab.", this);
+        }
+
+    }
+
 
     private void OnCollisionEnter(Collision collision)
     {
@@ -96,6 +120,12 @@ public class PlayerController : MonoBehaviour
 
 	void FixedUpdate ()
     {
+        //避免误操作其他玩家
+        if (!photonView.IsMine && PhotonNetwork.IsConnected)
+        {
+            return;
+        }
+        //Debug.Log(photonView.IsMine);
         m_animator.SetBool("Grounded", m_isGrounded);
 
 
@@ -124,23 +154,24 @@ public class PlayerController : MonoBehaviour
             m_currentDirection = Vector3.Slerp(m_currentDirection, direction, Time.deltaTime * m_interpolation);
 
             transform.position += m_currentDirection * m_moveSpeed * Time.deltaTime;
-            Debug.Log(direction.magnitude / 2.0f);
-            m_animator.SetFloat("MoveSpeed", direction.magnitude/2.0f);
+            //Debug.Log(direction.magnitude / 2.0f);
+            m_animator.SetFloat("MoveSpeed", direction.magnitude / 2.0f);
         }
 
         JumpingAndLanding();
 
-        if(Input.GetKey(KeyCode.F))
+        if (Input.GetKey(KeyCode.F))
         {
             m_animator.SetTrigger("Wave");
         }
 
-        if(Input.GetKey(KeyCode.E))
+        if (Input.GetKey(KeyCode.E))
         {
             m_animator.SetTrigger("Pickup");
         }
 
         m_wasGrounded = m_isGrounded;
+         
     }
 
 

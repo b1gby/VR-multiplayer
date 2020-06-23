@@ -8,6 +8,7 @@ public class Launcher : MonoBehaviourPunCallbacks
     // Start is called before the first frame update
     void Start()
     {
+        Screen.fullScreen = false;
         PhotonNetwork.ConnectUsingSettings(); //using unity settings
     }
 
@@ -25,6 +26,6 @@ public class Launcher : MonoBehaviourPunCallbacks
     {
         base.OnJoinedRoom();
 
-        PhotonNetwork.Instantiate("Player", new Vector3(1, 1, 0), Quaternion.identity, 0);
+        PhotonNetwork.Instantiate("Player", new Vector3(0, 3, -10), Quaternion.identity, 0);
     }
 }

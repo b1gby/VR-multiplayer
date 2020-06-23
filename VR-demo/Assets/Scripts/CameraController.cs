@@ -1,15 +1,16 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Photon.Pun;
 
-public class CameraController : MonoBehaviour
+public class CameraController : MonoBehaviourPun
 {
     public Transform player;
     private float mouseX, mouseY;//获取鼠标移动的值
-    public float mouseSensitivity;//获取鼠标移动速度
+    public float mouseSensitivity=200;//获取鼠标移动速度
 
     public float yRotation;
-   
+
     // Start is called before the first frame update
     void Start()
     {
