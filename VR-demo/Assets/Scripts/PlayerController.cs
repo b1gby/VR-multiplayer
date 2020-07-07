@@ -46,14 +46,14 @@ public class PlayerController : MonoBehaviourPun
 
     void Start()
     {
-        CameraWork _cameraWork = this.gameObject.GetComponent<CameraWork>();
+        CameraController _cameraController = this.gameObject.GetComponent<CameraController>();
 
 
-        if (_cameraWork != null)
+        if (_cameraController != null)
         {
             if (photonView.IsMine)
             {
-                _cameraWork.OnStartFollowing();
+                _cameraController.SetFolling();
             }
         }
         else

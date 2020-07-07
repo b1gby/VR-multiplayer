@@ -6,9 +6,9 @@ VR-demo/Assets/Photon*
 VR-demo/Assets/NaturePackLite/
 VR-demo/Assets/NaturePackLite*
 
-# Player Model
-VR-demo/Assets/Supercyan/
-VR-demo/Assets/Supercyan*
+# AssetsPackages
+VR-demo/Assets/AssetsPackages
+VR-demo/Assets/AssetsPackages*
 
 # library
 VR-demo/Library
@@ -17,3 +17,12 @@ VR-demo/Library
 VR-demo/.vs/
 *.csproj
 *.sln
+
+# afterBuild
+VR-demo/GameAfterBuild
+
+# temp
+VR-demo/Temp
+
+# unity other
+VR-demo/obj
