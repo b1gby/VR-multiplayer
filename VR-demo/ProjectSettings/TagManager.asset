@@ -3,7 +3,13 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 2
-  tags: []
+  tags:
+  - floor
+  - Everyone
+  - 1001
+  - 2001
+  - 3001
+  - 4001
   layers:
   - Default
   - TransparentFX

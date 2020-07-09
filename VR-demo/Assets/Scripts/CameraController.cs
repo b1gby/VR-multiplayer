@@ -129,7 +129,7 @@ public class CameraController : MonoBehaviourPun
     //first-person view
     void LookAsFirstPersonView()
     {
-        cameraTransform.position = this.transform.position + new Vector3(0, 0.8f, 0.1f);
+        cameraTransform.position = this.transform.position + new Vector3(0, 1.6f, 0.1f);
         //cameraTransform.LookAt(cameraTransform.position);
 
         mouseX = Input.GetAxis("Mouse X") * mouseSensitivity * Time.deltaTime;
