@@ -10,6 +10,8 @@ TagManager:
   - 2001
   - 3001
   - 4001
+  - Onlyone
+  - OnlyoneContainer
   layers:
   - Default
   - TransparentFX

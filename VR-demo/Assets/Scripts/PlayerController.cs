@@ -4,21 +4,20 @@ using Photon.Pun;
 using Photon.Pun.Demo.PunBasics;
 using System;
 using UnityEditor;
+using UnityEngine.UI;
 
 
 public class PlayerController : MonoBehaviourPun, IPunObservable
 {
     public void Initialize(GameObject character)
     {
-        m_animator = character.GetComponent<Animator>();
         m_rigidBody = character.GetComponent<Rigidbody>();
     }
 
     
     [SerializeField] private float m_moveSpeed = 2.0f;
     [SerializeField] private float m_jumpForce = 4;
-
-    [SerializeField] private Animator m_animator;
+    
     [SerializeField] private Rigidbody m_rigidBody;
 
 
@@ -42,9 +41,7 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
     Transform cameraTransform;
     private Transform targetTransform;
     private bool isDragObject = false;
-    private static int pressECount = 0;
-
-    private static bool isRecvCopyOnce = false;
+    
     private Transform recvTransform = null;
     private Transform recvTransformTmp = null;
 
@@ -53,10 +50,14 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
     private float m_b = 0;
 
     private string m_viewID;
+
+    private Text HasLockTip;
+
+    private bool isLockStatusChanged = false;
+
     void Awake()
     {
-        if(!m_animator) { gameObject.GetComponent<Animator>(); }
-        if(!m_rigidBody) { gameObject.GetComponent<Animator>(); }
+        if(!m_rigidBody) { gameObject.GetComponent<Rigidbody>(); }
     }
 
 
@@ -68,6 +69,8 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
         m_b = UnityEngine.Random.value * 256;
         CameraController _cameraController = this.gameObject.GetComponent<CameraController>();
         cameraTransform = Camera.main.transform;
+
+        HasLockTip = GameObject.Find("HasLockTip").transform.GetComponent<Text>();
         if (_cameraController != null)
         {
             if (photonView.IsMine)
@@ -138,12 +141,15 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
     
     public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
     {
+        // something changed locally, and send it to other
         if (stream.IsWriting)
         {
+
+            #region Send something can collaborate
             GameObject[] sendTargets = GameObject.FindGameObjectsWithTag(m_viewID);
 
             //if(targetTransform!=null)
-            if(sendTargets.Length != 0)
+            if (sendTargets.Length != 0)
             {
                 stream.SendNext("syncSelectTarget:" + sendTargets.Length.ToString());
                 foreach (GameObject per_sendTarget in sendTargets)
@@ -161,12 +167,39 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
 
                     stream.SendNext(ColorUtility.ToHtmlStringRGBA(
                         per_Transform.GetComponent<MeshRenderer>().materials[0].color));
-                    
+
                 }
-                
+
             }
+            #endregion
+
+            #region Send somthing can not collaborate ( should be locked )
+
+            if(isLockStatusChanged)
+            {
+                GameObject[] sendMsgWithLock = GameObject.FindGameObjectsWithTag("Onlyone");
+
+                stream.SendNext("syncLock:" + sendMsgWithLock.Length.ToString());
+                foreach (GameObject per_target in sendMsgWithLock)
+                {
+                    LockDispatcher dispatcher = per_target.GetComponent<LockDispatcher>();
+                    stream.SendNext(dispatcher.hasLock);
+                    Debug.Log("send:" + dispatcher.hasLock);
+                    stream.SendNext(per_target.transform.position);
+
+                    stream.SendNext(per_target.transform.rotation);
+
+                    stream.SendNext(per_target.transform.localScale);
+                }
+
+                isLockStatusChanged = false;
+            }
+            
+            #endregion
         }
-        if(stream.IsReading)
+
+        // do something after recv other changes
+        if (stream.IsReading)
         {
             
 
@@ -217,13 +250,47 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
 
                     recvTransform.localScale = recvScale;
 
-                    recvTransform.GetComponent<MeshRenderer>().materials = new Material[]
-                    {
-                        Resources.Load("Materials/New_Chair_Material") as Material,
-                    };
+                    //recvTransform.GetComponent<MeshRenderer>().materials = new Material[]
+                    //{
+                    //    Resources.Load("Materials/New_Chair_Material") as Material,
+                    //};
                     newColor.a = 0.3f;
                     recvTransform.GetComponent<MeshRenderer>().materials[0].color = newColor;
                 }
+            }
+
+            else if (recvArray[0] == "syncLock")
+            {
+                GameObject[] recvMsgWithLock = GameObject.FindGameObjectsWithTag("Onlyone");
+                
+                foreach (GameObject per_target in recvMsgWithLock)
+                {
+                    LockDispatcher dispatcher = per_target.GetComponent<LockDispatcher>();
+                    dispatcher.hasLock = (bool)stream.ReceiveNext();
+                    Debug.Log("recv:" + dispatcher.hasLock);
+
+                    if (dispatcher.hasLock)
+                    {
+                        per_target.GetComponent<MeshRenderer>().materials[0].color = new Color(1.0f, 1.0f, 0.0f);
+                    }
+                    else
+                    {
+                        per_target.GetComponent<MeshRenderer>().materials[0].color = new Color(1.0f, 1.0f, 1.0f);
+                    }
+
+                    Vector3 recvPosition = (Vector3)stream.ReceiveNext();
+                    Quaternion recvRotation = (Quaternion)stream.ReceiveNext();
+                    Vector3 recvScale = (Vector3)stream.ReceiveNext();
+
+                    per_target.transform.position = recvPosition;
+
+                    per_target.transform.rotation = recvRotation;
+
+                    per_target.transform.localScale = recvScale;
+
+                   
+                }
+
             }
         }
     }
@@ -250,16 +317,146 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
 
     void FixedUpdate ()
     {
-        //避免误操作其他玩家
+        // avoid controlling player not mine
         if (!photonView.IsMine && PhotonNetwork.IsConnected)
         {
             return;
         }
-        //Debug.Log(photonView.IsMine);
 
-        m_animator.SetBool("Grounded", m_isGrounded);
 
         // movement
+        MovementController();
+
+
+        // jump
+        JumpingAndLanding();
+        
+
+        // pickup
+        if (Input.GetKeyDown(KeyCode.E))
+        {
+            if(!isDragObject)
+            {
+                SelectObject();
+            }
+            else
+            {
+                SelectDownObject();
+            }
+        }
+        
+
+        m_wasGrounded = m_isGrounded;
+         
+    }
+
+    private void SelectObject()
+    {
+
+        RaycastHit screenCenterTarget;
+
+        if (Physics.Raycast(cameraTransform.position, cameraTransform.forward, out screenCenterTarget, 100f))
+        {
+            targetTransform = screenCenterTarget.transform;
+            //Debug.Log(targetTransform.name);
+        }
+
+        //这里if加上&&后面，是因为在别人选择物体移动时，只能选择基本的（Everyone），不能动其他人动过的
+        if (targetTransform != null && (targetTransform.tag == "Everyone" || targetTransform.tag == m_viewID))
+        {
+            if(targetTransform.tag == m_viewID)
+            {
+                //nothing to do
+            }
+            else if (GameObject.Find(targetTransform.name + "(Clone)" + m_viewID) == null)
+            {
+                targetTransform = Instantiate(targetTransform.gameObject,targetTransform.parent).transform;
+
+                //Material[] m = new Material[]
+                //    {
+                //        Resources.Load("Materials/New_Chair_Material") as Material,
+                //    };
+                
+                //m[0].color = new Color(m_r/255,m_g/255,m_b/255);
+
+                targetTransform.name += m_viewID;
+                targetTransform.GetComponent<MeshRenderer>().materials[0].color = new Color(m_r / 255, m_g / 255, m_b / 255);
+                targetTransform.tag = m_viewID;
+            }
+            else
+            {
+                targetTransform = GameObject.Find(targetTransform.name + "(Clone)" + m_viewID).transform;
+            }
+            isDragObject = true;
+        }
+
+
+        if(targetTransform.tag == "Onlyone")
+        {
+            LockDispatcher dispatcher = targetTransform.GetComponent<LockDispatcher>();
+            if (dispatcher.hasLock)
+            {
+                HasLockTip.GetComponent<Timer>().startTimer(3f);
+            }
+            else
+            {
+                // find OnlyoneContainer
+                Transform containerT = targetTransform.parent;
+                while(containerT.tag!="OnlyoneContainer")
+                {
+                    containerT = containerT.parent;
+                }
+                
+                
+                // find child in OnlyoneContainer
+                Transform[] allChild = containerT.GetComponentsInChildren<Transform>();
+                foreach(Transform child in allChild)
+                {
+                    if(child.tag == "Onlyone")
+                    {
+                        LockDispatcher allDispatcher = child.GetComponent<LockDispatcher>();
+                        allDispatcher.GetLock();
+                    }
+                }
+                isLockStatusChanged = true;
+                isDragObject = true;
+            }
+        }
+        
+    }
+
+    private void SelectDownObject()
+    {
+        if (targetTransform.tag == "Onlyone")
+        {
+            // find OnlyoneContainer
+            Transform containerT = targetTransform.parent;
+            while (containerT.tag != "OnlyoneContainer")
+            {
+                containerT = containerT.parent;
+            }
+
+            Debug.Log("T:" + containerT.name);
+            // find child in OnlyoneContainer
+            Transform[] allChild = containerT.GetComponentsInChildren<Transform>();
+            foreach (Transform child in allChild)
+            {
+                if (child.tag == "Onlyone")
+                {
+                    LockDispatcher allDispatcher = child.GetComponent<LockDispatcher>();
+                    allDispatcher.ReleaseLock();
+                }
+            }
+            isLockStatusChanged = true;
+        }
+        
+        isDragObject = false;
+        targetTransform = null;
+        
+    }
+
+    private void MovementController()
+    {
         float v = Input.GetAxis("Vertical");
         float h = Input.GetAxis("Horizontal");
 
@@ -285,86 +482,7 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
             m_currentDirection = Vector3.Slerp(m_currentDirection, direction, Time.deltaTime * m_interpolation);
 
             transform.position += m_currentDirection * m_moveSpeed * Time.deltaTime;
-            //Debug.Log(direction.magnitude / 2.0f);
-            m_animator.SetFloat("MoveSpeed", direction.magnitude / 2.0f);
         }
-
-
-        // jump
-        JumpingAndLanding();
-
-
-        // some action
-        // wave
-        if (Input.GetKeyDown(KeyCode.Mouse4))
-        {
-            m_animator.SetTrigger("Wave");
-        }
-
-        // pickup
-        if (Input.GetKeyDown(KeyCode.E))
-        {
-            pressECount++;
-            if(pressECount%2 == 1)
-            {
-                SelectObject();
-            }
-            else
-            {
-                SelectDownObject();
-            }
-        }
-        
-
-        m_wasGrounded = m_isGrounded;
-         
-    }
-
-    private void SelectObject()
-    {
-        
-        RaycastHit screenCenterTarget;
-
-        if(Physics.Raycast(cameraTransform.position, cameraTransform.forward,out screenCenterTarget,100f))
-        {
-            targetTransform = screenCenterTarget.transform;
-            //Debug.Log(targetTransform.name);
-        }
-
-        //这里if加上&&后面，是因为在别人选择物体移动时，只能选择基本的（Everyone），不能动其他人动过的
-        if (targetTransform!=null && (targetTransform.tag == "Everyone" || targetTransform.tag == m_viewID))
-        {
-            if(targetTransform.tag == m_viewID)
-            {
-                //nothing to do
-            }
-            else if (GameObject.Find(targetTransform.name + "(Clone)" + m_viewID) == null)
-            {
-                targetTransform = Instantiate(targetTransform.gameObject,targetTransform.parent).transform;
-
-                Material[] m = new Material[]
-                    {
-                        Resources.Load("Materials/New_Chair_Material") as Material,
-                    };
-                
-                m[0].color = new Color(m_r/255,m_g/255,m_b/255);
-
-                targetTransform.name += m_viewID;
-                targetTransform.GetComponent<MeshRenderer>().materials = m;
-                targetTransform.tag = m_viewID;
-            }
-            else
-            {
-                targetTransform = GameObject.Find(targetTransform.name + "(Clone)" + m_viewID).transform;
-            }
-            isDragObject = true;
-        }
-    }
-
-    private void SelectDownObject()
-    {
-        isDragObject = false;
-        targetTransform = null;
     }
 
     private void JumpingAndLanding()
@@ -375,16 +493,6 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
         {
             m_jumpTimeStamp = Time.time;
             m_rigidBody.AddForce(Vector3.up * m_jumpForce, ForceMode.Impulse);
-        }
-
-        if (!m_wasGrounded && m_isGrounded)
-        {
-            m_animator.SetTrigger("Land");
-        }
-
-        if (!m_isGrounded && m_wasGrounded)
-        {
-            m_animator.SetTrigger("Jump");
         }
     }
 
