@@ -51,9 +51,12 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
 
     private string m_viewID;
 
-    private Text HasLockTip;
+    private Text hasLockTip;
+    private Text isSelectedTip;
 
     private bool isLockStatusChanged = false;
+    private bool isSleepToUnlock = false;
+    private float time_sleepToUnlock = 0.2f;
 
     void Awake()
     {
@@ -70,7 +73,8 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
         CameraController _cameraController = this.gameObject.GetComponent<CameraController>();
         cameraTransform = Camera.main.transform;
 
-        HasLockTip = GameObject.Find("HasLockTip").transform.GetComponent<Text>();
+        hasLockTip = GameObject.Find("HasLockTip").transform.GetComponent<Text>();
+        isSelectedTip = GameObject.Find("IsSelectedTip").transform.GetComponent<Text>();
         if (_cameraController != null)
         {
             if (photonView.IsMine)
@@ -184,7 +188,7 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
                 {
                     LockDispatcher dispatcher = per_target.GetComponent<LockDispatcher>();
                     stream.SendNext(dispatcher.hasLock);
-                    Debug.Log("send:" + dispatcher.hasLock);
+                    //Debug.Log("send:" + dispatcher.hasLock);
                     stream.SendNext(per_target.transform.position);
 
                     stream.SendNext(per_target.transform.rotation);
@@ -192,7 +196,7 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
                     stream.SendNext(per_target.transform.localScale);
                 }
 
-                isLockStatusChanged = false;
+                
             }
             
             #endregion
@@ -259,7 +263,7 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
                 }
             }
 
-            else if (recvArray[0] == "syncLock")
+            if(recvArray[0] == "syncLock")
             {
                 GameObject[] recvMsgWithLock = GameObject.FindGameObjectsWithTag("Onlyone");
                 
@@ -267,7 +271,7 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
                 {
                     LockDispatcher dispatcher = per_target.GetComponent<LockDispatcher>();
                     dispatcher.hasLock = (bool)stream.ReceiveNext();
-                    Debug.Log("recv:" + dispatcher.hasLock);
+                    //Debug.Log("recv:" + dispatcher.hasLock);
 
                     if (dispatcher.hasLock)
                     {
@@ -313,6 +317,16 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
         {
             targetTransform.position = cameraTransform.position + cameraTransform.forward * 2f;
         }
+
+        if(isSleepToUnlock)
+        {
+            time_sleepToUnlock -= Time.deltaTime;
+            if (time_sleepToUnlock <= 0)
+            {
+                isLockStatusChanged = false;
+                isSleepToUnlock = false;
+            }
+        }
     }
 
     void FixedUpdate ()
@@ -335,6 +349,7 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
         // pickup
         if (Input.GetKeyDown(KeyCode.E))
         {
+            //Debug.Log(isDragObject);
             if(!isDragObject)
             {
                 SelectObject();
@@ -344,7 +359,7 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
                 SelectDownObject();
             }
         }
-        
+        Debug.Log(isLockStatusChanged);
 
         m_wasGrounded = m_isGrounded;
          
@@ -359,6 +374,16 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
         {
             targetTransform = screenCenterTarget.transform;
             //Debug.Log(targetTransform.name);
+        }
+
+        // select other people is controlling
+        int parseTag;
+        if(int.TryParse(targetTransform.tag, out parseTag))
+        {
+            if(parseTag!=int.Parse(m_viewID) && parseTag>=1001 && parseTag<=10000)
+            {
+                isSelectedTip.GetComponent<Timer>().startTimer(3f);
+            }
         }
 
         //这里if加上&&后面，是因为在别人选择物体移动时，只能选择基本的（Everyone），不能动其他人动过的
@@ -396,7 +421,7 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
             LockDispatcher dispatcher = targetTransform.GetComponent<LockDispatcher>();
             if (dispatcher.hasLock)
             {
-                HasLockTip.GetComponent<Timer>().startTimer(3f);
+                hasLockTip.GetComponent<Timer>().startTimer(3f);
             }
             else
             {
@@ -447,7 +472,8 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
                     allDispatcher.ReleaseLock();
                 }
             }
-            isLockStatusChanged = true;
+            isSleepToUnlock = true;
+            time_sleepToUnlock = 0.2f;
         }
         
         isDragObject = false;
