@@ -40,7 +40,8 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
 
     Transform cameraTransform;
     private Transform targetTransform;
-    private bool isDragObject = false;
+    private bool isDragObjectWithoutLock = false;
+    private bool isDragObjectWithLock = false;
     
     private Transform recvTransform = null;
     private Transform recvTransformTmp = null;
@@ -54,7 +55,7 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
     private Text hasLockTip;
     private Text isSelectedTip;
 
-    private bool isLockStatusChanged = false;
+    private bool isLockStatusChanged = false; // 两种方案：一是锁的状态改变就为真，之后把数据同步后置为假；二是上锁为真，解锁为假，但要设置延时，让他延时一会解除数据同步
     private bool isSleepToUnlock = false;
     private float time_sleepToUnlock = 0.2f;
 
@@ -153,7 +154,7 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
             GameObject[] sendTargets = GameObject.FindGameObjectsWithTag(m_viewID);
 
             //if(targetTransform!=null)
-            if (sendTargets.Length != 0)
+            if (sendTargets.Length != 0 && isDragObjectWithoutLock)
             {
                 stream.SendNext("syncSelectTarget:" + sendTargets.Length.ToString());
                 foreach (GameObject per_sendTarget in sendTargets)
@@ -179,8 +180,12 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
 
             #region Send somthing can not collaborate ( should be locked )
 
+            //这里不用isDragObjectWithLock进行判断的原因在于：
+            // isLockStatusChanged 在置为false时设置了0.2s的延时，见SelectDownObject()函数中
+            // 设置延时的目的，因为当放下带有锁的物体的时候，本地锁的状态还没来得及被置为false就发送同步给其他人，这里延时进行同步
             if(isLockStatusChanged)
             {
+                //Debug.Log("send!");
                 GameObject[] sendMsgWithLock = GameObject.FindGameObjectsWithTag("Onlyone");
 
                 stream.SendNext("syncLock:" + sendMsgWithLock.Length.ToString());
@@ -211,6 +216,7 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
             try
             {
                 string recvStr = (string)stream.ReceiveNext();
+                //Debug.Log(recvStr);
                 recvArray = recvStr.Split(new char[1] {':' });
             }
             catch(Exception e)
@@ -313,7 +319,7 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
 
     private void Update()
     {
-        if(isDragObject)
+        if(isDragObjectWithLock || isDragObjectWithoutLock)
         {
             targetTransform.position = cameraTransform.position + cameraTransform.forward * 2f;
         }
@@ -350,7 +356,7 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
         if (Input.GetKeyDown(KeyCode.E))
         {
             //Debug.Log(isDragObject);
-            if(!isDragObject)
+            if(!isDragObjectWithLock && !isDragObjectWithoutLock)
             {
                 SelectObject();
             }
@@ -359,7 +365,7 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
                 SelectDownObject();
             }
         }
-        Debug.Log(isLockStatusChanged);
+        //Debug.Log(isLockStatusChanged);
 
         m_wasGrounded = m_isGrounded;
          
@@ -412,7 +418,7 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
             {
                 targetTransform = GameObject.Find(targetTransform.name + "(Clone)" + m_viewID).transform;
             }
-            isDragObject = true;
+            isDragObjectWithoutLock = true;
         }
 
 
@@ -444,7 +450,7 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
                     }
                 }
                 isLockStatusChanged = true;
-                isDragObject = true;
+                isDragObjectWithLock = true;
             }
         }
         
@@ -474,10 +480,15 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
             }
             isSleepToUnlock = true;
             time_sleepToUnlock = 0.2f;
+            isDragObjectWithLock = false;
+            targetTransform = null;
+        }
+        else
+        {
+            isDragObjectWithoutLock = false;
+            targetTransform = null;
         }
         
-        isDragObject = false;
-        targetTransform = null;
         
     }
 

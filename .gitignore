@@ -1,28 +1,5 @@
-# Photon
-VR-demo/Assets/Photon/
-VR-demo/Assets/Photon*
-
-# Enviroment
-VR-demo/Assets/NaturePackLite/
-VR-demo/Assets/NaturePackLite*
-
-# AssetsPackages
-VR-demo/Assets/AssetsPackages
-VR-demo/Assets/AssetsPackages*
-
-# library
-VR-demo/Library
-
-# vs
-VR-demo/.vs/
-*.csproj
-*.sln
-
 # afterBuild
 VR-demo/GameAfterBuild
 
-# temp
-VR-demo/Temp
-
-# unity other
-VR-demo/obj
+# library
+VR-demo/Library
