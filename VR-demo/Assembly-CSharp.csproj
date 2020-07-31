@@ -124,9 +124,6 @@
     <Compile Include="Assets\Scripts\NetworkLauncher.cs" />
     <Compile Include="Assets\Scripts\PlayerController.cs" />
     <Compile Include="Assets\Scripts\Timer.cs" />
-    <Compile Include="Assets\Supercyan\Scripts\DemoFree.cs" />
-    <Compile Include="Assets\Supercyan\Scripts\FreeCameraLogic.cs" />
-    <Compile Include="Assets\Supercyan\Scripts\SimpleSampleCharacterControl.cs" />
     <None Include="Assets\AssetsPackages\Table and chair\Standard Assets\Effects\ImageEffects\Shaders\Tonemapper.shader" />
     <None Include="Assets\AssetsPackages\Table and chair\Standard Assets\Effects\ImageEffects\Shaders\GlobalFog.shader" />
     <None Include="Assets\AssetsPackages\Table and chair\Standard Assets\Effects\ImageEffects\Shaders\VortexEffect.shader" />
@@ -143,7 +140,6 @@
     <None Include="Assets\AssetsPackages\Table and chair\Standard Assets\Effects\ImageEffects\Shaders\ColorCorrectionCurves.shader" />
     <None Include="Assets\AssetsPackages\Table and chair\Standard Assets\Effects\Projectors\Guidelines.txt" />
     <None Include="Assets\AssetsPackages\Table and chair\Standard Assets\Effects\ImageEffects\Shaders\_BloomAndFlares\MultiPassHollywoodFlares.shader" />
-    <None Include="Assets\Supercyan\Shaders\Legacy\CelShader.shader" />
     <None Include="Assets\AssetsPackages\Table and chair\Standard Assets\Effects\ImageEffects\Shaders\SSAOShader.shader" />
     <None Include="Assets\AssetsPackages\Table and chair\Standard Assets\Effects\ImageEffects\Shaders\ColorCorrectionCurvesSimple.shader" />
     <None Include="Assets\AssetsPackages\Table and chair\Standard Assets\Effects\ImageEffects\Shaders\_BloomAndFlares\Blend.shader" />
@@ -164,7 +160,6 @@
     <None Include="Assets\AssetsPackages\Table and chair\Standard Assets\Effects\ImageEffects\Shaders\ColorCorrectionSelective.shader" />
     <None Include="Assets\AssetsPackages\Table and chair\Standard Assets\Effects\ImageEffects\Shaders\RadialBlur.shader" />
     <None Include="Assets\AssetsPackages\Table and chair\Standard Assets\Effects\ImageEffects\Shaders\ScreenSpaceRaytrace.cginc" />
-    <None Include="Assets\Supercyan\Shaders\SupercyanShader.shader" />
     <None Include="Assets\AssetsPackages\Table and chair\Standard Assets\Effects\ImageEffects\Shaders\_BloomAndFlares\VignetteShader.shader" />
     <None Include="Assets\AssetsPackages\Table and chair\Standard Assets\Effects\ImageEffects\Shaders\MotionBlurClear.shader" />
     <None Include="Assets\AssetsPackages\Table and chair\Standard Assets\Effects\GlassRefraction\Shaders\GlassStainedBumpDistort.shader" />
@@ -207,7 +202,6 @@
     <None Include="Assets\AssetsPackages\Table and chair\Standard Assets\Effects\ToonShading\Shaders\ToonBasicOutline.shader" />
     <None Include="Assets\AssetsPackages\Table and chair\Standard Assets\Effects\ImageEffects\Shaders\_DepthOfField\DepthOfFieldScatter.shader" />
     <None Include="Assets\AssetsPackages\Table and chair\Standard Assets\Effects\ImageEffects\Shaders\EdgeDetectNormals.shader" />
-    <None Include="Assets\Supercyan\Shaders\SupercyanShaderLighting.cginc" />
     <None Include="Assets\AssetsPackages\Table and chair\Standard Assets\Effects\ImageEffects\Shaders\NoiseEffectShaderRGB.shader" />
     <None Include="Assets\Photon\PhotonLibs\Photon3Unity3D.xml" />
     <None Include="Assets\AssetsPackages\Table and chair\Standard Assets\Effects\ImageEffects\Shaders\_Antialiasing\FXAA2.shader" />
