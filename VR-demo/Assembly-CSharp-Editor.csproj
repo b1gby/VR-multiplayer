@@ -266,6 +266,9 @@
     <Reference Include="websocket-sharp">
       <HintPath>D:/Unity project/VR-multiplayer/VR-demo/Assets/Photon/PhotonLibs/WebSocket/websocket-sharp.dll</HintPath>
     </Reference>
+    <Reference Include="Valve.Newtonsoft.Json">
+      <HintPath>D:/Unity project/VR-multiplayer/VR-demo/Assets/SteamVR/Input/Plugins/JSON.NET/Valve.Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="nunit.framework">
       <HintPath>D:/Unity project/VR-multiplayer/VR-demo/Library/PackageCache/com.unity.ext.nunit@1.0.0/net35/unity-custom/nunit.framework.dll</HintPath>
     </Reference>
@@ -705,6 +708,22 @@
     <ProjectReference Include="PhotonUnityNetworking.Editor.csproj">
       <Project>{877E937A-4FED-6156-A825-43CE4629E747}</Project>
       <Name>PhotonUnityNetworking.Editor</Name>
+    </ProjectReference>
+    <ProjectReference Include="SteamVR_Input_Editor.csproj">
+      <Project>{FA182996-53E0-AE2B-2DF1-68BB50F36021}</Project>
+      <Name>SteamVR_Input_Editor</Name>
+    </ProjectReference>
+    <ProjectReference Include="SteamVR_Editor.csproj">
+      <Project>{B1AF49D6-E112-EABE-5393-59A55E0FAE66}</Project>
+      <Name>SteamVR_Editor</Name>
+    </ProjectReference>
+    <ProjectReference Include="SteamVR.csproj">
+      <Project>{2901D577-AF20-A320-0A5A-07A8D2D41E0F}</Project>
+      <Name>SteamVR</Name>
+    </ProjectReference>
+    <ProjectReference Include="SteamVR_Windows_EditorHelper.csproj">
+      <Project>{C7263D49-065F-A709-4B95-27A34B451EAE}</Project>
+      <Name>SteamVR_Windows_EditorHelper</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

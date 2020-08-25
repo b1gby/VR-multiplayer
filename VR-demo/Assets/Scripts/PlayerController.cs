@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Photon.Pun;
 using Photon.Pun.Demo.PunBasics;
 using System;
+using System.Collections;
 using UnityEditor;
 using UnityEngine.UI;
 
@@ -59,6 +60,42 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
     private bool isSleepToUnlock = false;
     private float time_sleepToUnlock = 0.2f;
 
+    private int m_pressGNum = 0;
+    private List<List<GameObject>> m_snapshotsList;
+    public GameObject snapShotsGameObject;
+    private bool is_takingSnapShots = false;
+    public GameObject TimelineUI;
+    public GameObject UI3dRawImage;
+    private bool is_displaySnapShotDetail = false;
+    private Transform snapDetail = null;
+    private Vector3 oldSnapDetailPosition = Vector3.zero;
+    private int click_snapIndex = -1;
+    private GameObject btnBackTrack;
+    private Camera UI3dCamera;
+
+    //private GameObject btnShare;
+    private bool isShareToOther = false;
+
+    private Text detailTitleTxt;
+
+    private float startTime;
+    private float createDeltaTime;
+    private GameObject newCreateSnap;
+    private bool isClickSnapBtn = false;
+
+    private TimelineUIController timelineUIController;
+    private float timelineSize = 60;
+
+    private List<Transform> snapMoveList;
+    private List<Vector3> snapMovePosList;
+    private bool isMoveSnapList = false;
+
+    private float[,] snapDisplayList = { {1024*2/8,768*3/5 }, { 1024 * 3 / 8, 768 * 4/ 5 }, 
+        { 1024 * 4/ 8, 768 * 3 / 5 },{ 1024 * 5 / 8, 768 * 4 / 5 }, { 1024 * 6 / 8, 768 * 3/ 5 } ,
+        { 1024 * 6 / 8, 768 * 2/ 5 },{ 1024 * 5 / 8, 768 * 1 / 5 },{ 1024 * 4 / 8, 768 * 2 / 5 },
+        { 1024 * 3 / 8, 768 * 1/ 5 },{ 1024 * 2 / 8, 768 * 2 / 5 }
+    };
+
     void Awake()
     {
         if(!m_rigidBody) { gameObject.GetComponent<Rigidbody>(); }
@@ -67,6 +104,7 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
 
     void Start()
     {
+        startTime = GameManager.startTime;
         m_viewID = this.photonView.ViewID.ToString();
         m_r = UnityEngine.Random.value * 256;
         m_g = UnityEngine.Random.value * 256;
@@ -76,6 +114,28 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
 
         hasLockTip = GameObject.Find("HasLockTip").transform.GetComponent<Text>();
         isSelectedTip = GameObject.Find("IsSelectedTip").transform.GetComponent<Text>();
+
+        m_snapshotsList = new List<List<GameObject>>();
+        snapShotsGameObject = GameManager.snapShots;
+        
+        TimelineUI = GameManager.TimelineUI;
+
+        btnBackTrack = GameManager.btnBackTrack;
+        btnBackTrack.GetComponent<Button>().onClick.AddListener(ClickBackTrackBtn);
+
+        //btnShare = GameManager.btnShare;
+        //btnShare.GetComponent<Button>().onClick.AddListener(ClickShareBtn);
+
+        UI3dCamera = GameManager.UI3dCamera;
+        UI3dRawImage = GameManager.UI3dRawImage;
+
+        detailTitleTxt = GameObject.Find("DetailTitleTxt").GetComponent<Text>();
+
+        timelineUIController = TimelineUI.GetComponent<TimelineUIController>();
+
+        snapMoveList = new List<Transform>();
+        snapMovePosList = new List<Vector3>();
+
         if (_cameraController != null)
         {
             if (photonView.IsMine)
@@ -203,7 +263,28 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
 
                 
             }
-            
+
+            #endregion
+
+            #region Share Snapshot to Others
+            if(isShareToOther)
+            {
+                stream.SendNext("syncShareSnapshot:" + newCreateSnap.transform.childCount.ToString());
+                stream.SendNext(newCreateSnap.name);
+                stream.SendNext(createDeltaTime);
+                stream.SendNext(m_viewID);
+                foreach (Transform child in newCreateSnap.transform)
+                {
+                    if(child.name!="Sphere")
+                    {
+                        stream.SendNext(child.name);
+                        stream.SendNext(child.localPosition);
+                    }
+                        
+                }
+                isShareToOther = false;
+            }
+
             #endregion
         }
 
@@ -226,7 +307,8 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
                 // Debug.Log(e);
             }
 
-            if(recvArray[0] == "syncSelectTarget")
+            #region sync something can collaborate
+            if (recvArray[0] == "syncSelectTarget")
             {
                 int recvNum = int.Parse(recvArray[1]);
                 for(int i = 0;i<recvNum;i++)
@@ -244,7 +326,9 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
                     {
                         recvTransformTmp = GameObject.Find(recvName.Replace("(Clone)" + recvViewID, "")).transform;
                         recvTransform = Instantiate(recvTransformTmp.gameObject, recvTransformTmp.parent).transform;
-
+                        
+                        //recvTransform.SetPositionAndRotation(Vector3.zero, recvTransform.parent.rotation);
+                        //recvTransform.localScale = Vector3.one;
                         recvTransform.name = recvName;
                         recvTransform.tag = recvViewID;
                         
@@ -269,7 +353,10 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
                 }
             }
 
-            if(recvArray[0] == "syncLock")
+            #endregion
+
+            #region sync somthing can not collaborate
+            if (recvArray[0] == "syncLock")
             {
                 GameObject[] recvMsgWithLock = GameObject.FindGameObjectsWithTag("Onlyone");
                 
@@ -302,6 +389,65 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
                 }
 
             }
+            #endregion
+
+            #region sync snapshot need to share
+            if (recvArray[0] == "syncShareSnapshot")
+            {
+
+                string recvName = (string)stream.ReceiveNext();
+                float recvDeltaTime = (float)stream.ReceiveNext();
+                string recvViewID = (string)stream.ReceiveNext();
+
+                GameObject tmp = new GameObject(recvName);
+                //tmp.name += recvViewID;
+                tmp.transform.SetParent(snapShotsGameObject.transform);
+                tmp.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
+                Vector3 screenPos = new Vector3(2000, 640, 5f);
+                tmp.transform.localPosition = UI3dCamera.ScreenToWorldPoint(screenPos);
+
+                int recvNum = int.Parse(recvArray[1]);
+                for (int i = 0; i < recvNum-1; i++)
+                {
+                    string recvChildName = (string)stream.ReceiveNext();
+                    Vector3 recvLocalPos = (Vector3)stream.ReceiveNext();
+                    GameObject childGo = Instantiate(GameObject.Find(recvChildName), tmp.transform);
+                    childGo.transform.localPosition = recvLocalPos;
+                }
+
+                foreach (Transform child in tmp.transform)
+                {
+                    child.name = child.name.Substring(0, child.name.Length - 7);
+                }
+
+                // Sphere
+                GameObject tmpSphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                tmpSphere.transform.SetParent(tmp.transform);
+                tmpSphere.transform.localPosition = Vector3.zero;
+                tmpSphere.transform.localScale = Vector3.one * 3.8f;
+
+                tmpSphere.GetComponent<MeshRenderer>().materials = new Material[]
+                {
+                Resources.Load("Materials/wall_copy") as Material,
+                };
+
+
+                GameObject Button = new GameObject("Button", typeof(Button), typeof(RectTransform), typeof(Image), typeof(DeltaTime));
+                Button.transform.SetParent(TimelineUI.transform.GetChild(2));
+                Button.name = tmp.name + "btn";
+                Button.GetComponent<RectTransform>().sizeDelta = new Vector2(10, 10);
+                Button.GetComponent<RectTransform>().anchoredPosition = new Vector2(recvDeltaTime / timelineSize * 768 - 384, 128);
+                Button.GetComponent<DeltaTime>().CreateDeltaTime = recvDeltaTime;
+                Button.GetComponent<Button>().onClick.AddListener(() =>ClickSnapBtn(Button.name));
+                Button.GetComponent<Image>().color = new Color(1, 0, 0);
+
+                while (recvDeltaTime > timelineSize)
+                {
+                    timelineSize += 60;
+                    ResortTimeline();
+                }
+            }
+            #endregion
         }
     }
 
@@ -319,10 +465,11 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
 
     private void Update()
     {
-        if(isDragObjectWithLock || isDragObjectWithoutLock)
+        if(isDragObjectWithLock || isDragObjectWithoutLock || isMoveSnapList)
         {
             targetTransform.position = cameraTransform.position + cameraTransform.forward * 2f;
         }
+        
 
         if(isSleepToUnlock)
         {
@@ -333,15 +480,44 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
                 isSleepToUnlock = false;
             }
         }
+
+        if(snapShotsGameObject.activeSelf)
+        {
+            foreach(Transform snap in snapShotsGameObject.transform)
+            {
+                snap.RotateAround(snap.position, Vector3.up, 0.1f);
+            }
+        }
+
+        //display snapshots and snapshots details
+        DisplaySnapShots();
+
+
+        if (isMoveSnapList && Input.GetKeyUp(KeyCode.F))
+        {
+            for (int i = 0, k = 0; i < targetTransform.childCount; i++)
+            {
+                targetTransform.GetChild(i).SetParent(targetTransform.parent);
+                i--;
+            }
+
+            Destroy(targetTransform.gameObject);
+
+            isMoveSnapList = false;
+        }
     }
 
     void FixedUpdate ()
     {
+        
         // avoid controlling player not mine
-        if (!photonView.IsMine && PhotonNetwork.IsConnected)
+        if ((!photonView.IsMine && PhotonNetwork.IsConnected))
         {
             return;
         }
+
+
+        
 
 
         // movement
@@ -365,8 +541,11 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
                 SelectDownObject();
             }
         }
-        //Debug.Log(isLockStatusChanged);
 
+        // record snapshot
+        RecordSnapShots();
+
+        
         m_wasGrounded = m_isGrounded;
          
     }
@@ -402,14 +581,15 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
             else if (GameObject.Find(targetTransform.name + "(Clone)" + m_viewID) == null)
             {
                 targetTransform = Instantiate(targetTransform.gameObject,targetTransform.parent).transform;
-
                 //Material[] m = new Material[]
                 //    {
                 //        Resources.Load("Materials/New_Chair_Material") as Material,
                 //    };
-                
+
                 //m[0].color = new Color(m_r/255,m_g/255,m_b/255);
 
+                //targetTransform.SetPositionAndRotation(Vector3.zero, targetTransform.parent.rotation);
+                //targetTransform.localScale = Vector3.one;
                 targetTransform.name += m_viewID;
                 targetTransform.GetComponent<MeshRenderer>().materials[0].color = new Color(m_r / 255, m_g / 255, m_b / 255);
                 targetTransform.tag = m_viewID;
@@ -532,5 +712,405 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
             m_rigidBody.AddForce(Vector3.up * m_jumpForce, ForceMode.Impulse);
         }
     }
+
+    private void RecordSnapShots()
+    {
+        if (Input.GetKeyDown(KeyCode.G) && !is_takingSnapShots)
+        {
+            RaycastHit target;
+            List<GameObject> outlineTargets = Camera.main.transform.GetComponent<DrawOutline>().targets;
+
+            if (Physics.Raycast(cameraTransform.position, cameraTransform.forward, out target, 100f))
+            {
+                if (target.transform.parent.tag == "EveryoneContainer")
+                {
+                    foreach (Transform child in target.transform.parent)
+                    {
+                        if(child.tag!=m_viewID.ToString() && child.tag!="Everyone")
+                        {
+                            continue;
+                        }
+                        outlineTargets.Add(child.gameObject);
+                        if (child.transform.tag == m_viewID)
+                        {
+
+                            outlineTargets.Remove(GameObject.Find(child.name.Replace("(Clone)" + m_viewID, "")));
+                        }
+                        //if (child.childCount != 0)
+                        //{
+                        //    bool hasChildNotMine = false;
+                        //    foreach (Transform childOfChild in child.transform)
+                        //    {
+                        //        if(childOfChild.tag==m_viewID)
+                        //        {
+                        //            outlineTargets.Add(childOfChild.gameObject);
+                        //            hasChildNotMine = true;
+                        //        }
+                        //    }
+                        //    if(!hasChildNotMine)
+                        //        outlineTargets.Add(child.gameObject);
+                        //}
+                        //else
+                        //{
+                        //    outlineTargets.Add(child.gameObject);
+                        //}
+                    }
+                }
+                targetTransform = target.transform;
+                //Debug.Log(targetTransform.name);
+            }
+            is_takingSnapShots = true;
+        }
+
+        if (Input.GetKeyUp(KeyCode.G) && is_takingSnapShots)
+        {
+            List<GameObject> outlineTargets = Camera.main.transform.GetComponent<DrawOutline>().targets;
+            DateTime nowTime = DateTime.Now.ToLocalTime();
+            newCreateSnap = new GameObject(nowTime.ToString("yyyy-MM-dd HH:mm:ss"));
+            newCreateSnap.transform.SetParent(snapShotsGameObject.transform);
+            int n = snapShotsGameObject.transform.childCount;
+
+            newCreateSnap.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
+
+            Vector3 screenPos = new Vector3(2000, 640 ,5f);
+            newCreateSnap.transform.localPosition = UI3dCamera.ScreenToWorldPoint(screenPos);
+
+            foreach (GameObject target in outlineTargets)
+            {
+                GameObject.Instantiate(target, newCreateSnap.transform);
+            }
+            foreach (Transform child in newCreateSnap.transform)
+            {
+                child.name = child.name.Substring(0, child.name.Length - 7);
+            }
+            m_snapshotsList.Add(outlineTargets);
+
+            // Sphere
+            GameObject tmpSphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            tmpSphere.transform.SetParent(newCreateSnap.transform);
+            tmpSphere.transform.localPosition = Vector3.zero;
+            tmpSphere.transform.localScale = Vector3.one * 3.8f;
+
+            tmpSphere.GetComponent<MeshRenderer>().materials = new Material[]
+            {
+                Resources.Load("Materials/wall") as Material,
+            };
+
+            createDeltaTime = Time.time - startTime;
+            GameObject button = new GameObject("Button", typeof(Button), typeof(RectTransform), typeof(Image), typeof(DeltaTime));
+            button.transform.SetParent(TimelineUI.transform.GetChild(2));
+            button.name = newCreateSnap.name + "btn";
+            button.GetComponent<RectTransform>().sizeDelta = new Vector2(10, 10);
+            button.GetComponent<RectTransform>().anchoredPosition = new Vector2(createDeltaTime / timelineSize * 768-384,128);
+            button.GetComponent<DeltaTime>().CreateDeltaTime = createDeltaTime;
+            button.GetComponent<Button>().onClick.AddListener(()=>ClickSnapBtn(button.name));
+
+            while(createDeltaTime > timelineSize)
+            {
+                timelineSize += 60;
+                ResortTimeline();
+            }
+
+            outlineTargets.Clear();
+            isShareToOther = true;
+            is_takingSnapShots = false;
+        }
+    }
+
+    private void DisplaySnapShots()
+    {
+        if (Input.GetKeyDown(KeyCode.Tab))
+        {
+            m_pressGNum++;
+            //Debug.Log(snapShotsGameObject.activeSelf);
+            if (m_pressGNum%2!=0)
+            {
+                //snapShotsGameObject.SetActive(true);
+                TimelineUI.SetActive(true);
+                UI3dRawImage.SetActive(true);
+                Cursor.lockState = CursorLockMode.None;//锁定指针到视图中心
+                Cursor.visible = true;
+            }
+            else
+            {
+                //snapShotsGameObject.SetActive(false);
+                TimelineUI.SetActive(false);
+                UI3dRawImage.SetActive(false);
+                Cursor.lockState = CursorLockMode.Locked;//锁定指针到视图中心
+                Cursor.visible = false;
+            }
+        }
+
+        if(isClickSnapBtn&& Input.GetMouseButtonUp(0))
+        {
+            float screenX = Input.mousePosition.x / Screen.width * 1024;
+            float screenY = Input.mousePosition.y / Screen.height * 768;
+            if(screenX<=512+20&&screenX>=512-20&&screenY<=640+20&&screenY>=640-20)
+            {
+                is_displaySnapShotDetail = true;
+                isClickSnapBtn = false;
+            }
+        }
+
+        //if (snapShotsGameObject.activeSelf)
+        //{
+        //    btnBackTrack.SetActive(false);
+        //    btnShare.SetActive(false);
+
+
+        //    if (Input.GetMouseButtonUp(0))
+        //    {
+
+        //        float screenX = Input.mousePosition.x / Screen.width*1024;
+        //        float screenY = Input.mousePosition.y / Screen.height * 768;
+        //        //Debug.Log("s:" + screenX);
+        //        //Debug.Log("s:"+screenY);
+        //        //Debug.Log("d:"+snapDisplayList[0, 0]);
+        //        //Debug.Log("d:"+snapDisplayList[0, 1]);
+        //        for (int i=0;i<snapDisplayList.GetLength(0);i++)
+        //        {
+        //            //Debug.Log(snapDisplayList[i, 0]);
+        //            //Debug.Log(snapDisplayList[i, 1]);
+        //            if(screenX<=snapDisplayList[i,0]+20 && screenX >= snapDisplayList[i, 0] - 20
+        //                && screenY <= snapDisplayList[i, 1] + 20 && screenY >= snapDisplayList[i, 1] - 20)
+        //            {
+        //                snapDetail = snapShotsGameObject.transform.GetChild(i).transform;
+
+        //                //保存展示细节前的snapshot位置
+        //                //用index而不直接用position表示，是因为在本地调试多开窗口时，点一下，会进入n次这里（n:多开的窗口数）
+        //                //oldSnapDetailPosition = snapDetail.localPosition;
+        //                click_snapIndex = i;
+
+        //                snapDetail.localPosition = new Vector3(10000, 0, 5);
+        //                snapDetail.localScale = Vector3.one * 1.5f;
+        //                is_displaySnapShotDetail = true;
+
+        //                detailTitleTxt.text = snapDetail.name;
+        //                if(snapDetail.GetChild(4).GetComponent<MeshRenderer>().materials[0].name == "wall (Instance)")
+        //                {
+        //                    detailTitleTxt.text += " from me";
+        //                }
+        //                else
+        //                {
+        //                    detailTitleTxt.text += " from others";
+        //                }
+        //                break;
+        //            }
+        //        }
+        //        if (is_displaySnapShotDetail)
+        //        {
+        //            foreach (Transform child in snapShotsGameObject.transform)
+        //            {
+
+        //                if (child != snapDetail)
+        //                {
+        //                    child.gameObject.SetActive(false);
+        //                }
+        //            }
+        //        }
+        //    }
+        //}
+
+        if (is_displaySnapShotDetail)
+        {
+
+            Debug.Log("Detail2: " + snapDetail.name);
+            btnBackTrack.SetActive(true);
+            //btnShare.SetActive(true);
+            snapDetail.localPosition = new Vector3(10000, 0, 5);
+            snapDetail.localScale = Vector3.one * 1.5f;
+            detailTitleTxt.text = snapDetail.name;
+            TimelineUI.SetActive(false);
+            if (Input.GetKeyDown(KeyCode.Escape))
+            {
+                UI3dCamera.orthographicSize = 5;
+                TimelineUI.SetActive(true);
+                Vector3 screenPos = new Vector3(512, 640, 5f);
+                snapDetail.localPosition = UI3dCamera.ScreenToWorldPoint(screenPos);
+                snapDetail.localScale = Vector3.one * 0.5f;
+
+                btnBackTrack.SetActive(false);
+                //btnShare.SetActive(false);
+                detailTitleTxt.text = "";
+                is_displaySnapShotDetail = false;
+
+            }
+            if (Input.GetMouseButton(1)&&TimelineUI.activeSelf == false)
+            {
+                if (Input.GetAxis("Mouse X") < 0)
+                    snapDetail.RotateAround(snapDetail.position, Vector3.down, 1);
+                if (Input.GetAxis("Mouse X") > 0)
+                    snapDetail.RotateAround(snapDetail.position, Vector3.up, 1);
+
+                if (Input.GetAxis("Mouse Y") < 0)
+                    snapDetail.RotateAround(snapDetail.position, Vector3.right, 1);
+                if (Input.GetAxis("Mouse Y") > 0)
+                    snapDetail.RotateAround(snapDetail.position, Vector3.left, 1);
+            }
+            else if (Input.GetAxis("Mouse ScrollWheel") != 0)
+            {
+                UI3dCamera.orthographicSize += Input.GetAxis("Mouse ScrollWheel")*5;
+            }
+            else if(Input.GetKeyDown(KeyCode.F))
+            {
+                MoveSnapTogether();
+            }
+        }
+    }
+
+    private void ClickSnapBtn(string strBtnName)
+    {
+        foreach (Transform child in snapShotsGameObject.transform)
+        { 
+            child.localPosition = UI3dCamera.ScreenToWorldPoint(new Vector3(2000,640,5f));
+        }
+        snapDetail = null;
+        GameObject snap = GameObject.Find(strBtnName.Replace("btn", ""));
+        Vector3 screenPos = new Vector3(512, 640, 5f);
+        snap.transform.localPosition = UI3dCamera.ScreenToWorldPoint(screenPos);
+        snapDetail = snap.transform;
+        Debug.Log("Detail1: " + snapDetail.name);
+        isClickSnapBtn = true;
+    }
+
+    private void ClickBackTrackBtn()
+    {
+        Vector3 screenPos = new Vector3(512, 640, 5f);
+        snapDetail.localPosition = UI3dCamera.ScreenToWorldPoint(screenPos);
+        //snapDetail.localPosition = oldSnapDetailPosition;
+        snapDetail.localScale = Vector3.one * 0.5f;
+        is_displaySnapShotDetail = false;
+
+
+        TimelineUI.SetActive(false);
+        UI3dRawImage.SetActive(false);
+        btnBackTrack.SetActive(false);
+        //btnShare.SetActive(false);
+        detailTitleTxt.text = "";
+        Cursor.lockState = CursorLockMode.Locked;//锁定指针到视图中心
+        Cursor.visible = false;
+
+        Transform TableAndChairsT = GameObject.Find("TableAndChairs").transform;
+        foreach(Transform newChild in snapDetail)
+        {
+            if (newChild.name == "Sphere")
+                continue;
+            int i;
+            bool is_clone = false;
+            string newChildName = newChild.name + "(Clone)" + m_viewID;
+            for (i=0;i<TableAndChairsT.childCount;i++)
+            {
+
+                if (TableAndChairsT.GetChild(i).name == newChildName)
+                {
+                    is_clone = true;
+                    break;
+                }
+            }
+            if(is_clone)
+            {
+                TableAndChairsT.GetChild(i).localPosition = newChild.localPosition;
+            }
+            else
+            {
+                for (i = 0; i < TableAndChairsT.childCount; i++)
+                {
+                    if (TableAndChairsT.GetChild(i).name == newChild.name)
+                    {
+                        break;
+                    }
+                }
+                TableAndChairsT.GetChild(i).localPosition = newChild.localPosition;
+            }
+            
+            
+        }
+    }
+    
+    private void MoveSnapTogether()
+    {
+        Vector3 screenPos = new Vector3(512, 640, 5f);
+        snapDetail.localPosition = UI3dCamera.ScreenToWorldPoint(screenPos);
+        //snapDetail.localPosition = oldSnapDetailPosition;
+        snapDetail.localScale = Vector3.one * 0.5f;
+        is_displaySnapShotDetail = false;
+
+
+        TimelineUI.SetActive(false);
+        UI3dRawImage.SetActive(false);
+        btnBackTrack.SetActive(false);
+        //btnShare.SetActive(false);
+        detailTitleTxt.text = "";
+        Cursor.lockState = CursorLockMode.Locked;//锁定指针到视图中心
+        Cursor.visible = false;
+
+        Transform TableAndChairsT = GameObject.Find("TableAndChairs").transform;
+        foreach(Transform child in TableAndChairsT)
+        {
+            if(child.name.Contains("(Clone)"+m_viewID))
+            {
+                DestroyImmediate(child.gameObject);
+            }
+        }
+        Transform newGo = Instantiate(snapDetail, TableAndChairsT);
+        newGo.localScale = Vector3.one;
+        newGo.localRotation = Quaternion.identity;
+        foreach (Transform child in newGo)
+        {
+            if (child.name == "Sphere")
+            {
+                DestroyImmediate(child.gameObject);
+            }
+            else
+            {
+                child.name += "(Clone)" + m_viewID;
+                child.GetComponent<MeshRenderer>().materials[0].color = new Color(m_r / 255, m_g / 255, m_b / 255);
+                child.tag = m_viewID;
+            }
+            
+        }
+        targetTransform = newGo;
+        isMoveSnapList = true;
+        //foreach (Transform newChild in snapDetail)
+        //{
+        //    if (newChild.name == "Sphere")
+        //        continue;
+        //    snapMovePosList.Add(newChild.localPosition);
+        //    Transform newGo = Instantiate(newChild, TableAndChairsT);
+        //    newGo.name += m_viewID;
+        //    newGo.GetComponent<MeshRenderer>().materials[0].color = new Color(m_r / 255, m_g / 255, m_b / 255);
+        //    newGo.tag = m_viewID;
+        //    snapMoveList.Add(newGo);
+        //    isMoveSnapList = true;
+        //}
+    }
+
+    private void ResortTimeline()
+    {
+        Transform btnContainer = TimelineUI.transform.GetChild(2);
+        foreach(Transform child in btnContainer)
+        {
+            float childDeltaTime = child.GetComponent<DeltaTime>().CreateDeltaTime;
+            child.GetComponent<RectTransform>().anchoredPosition = new Vector2(childDeltaTime / timelineSize * 768 - 384, 128);
+        }
+
+        Transform txtContainer = TimelineUI.transform.GetChild(0);
+        int i = 0;
+        foreach(Transform child in txtContainer)
+        {
+            i++;
+            if(i==8)
+            {
+                break;
+            }
+            string oldTxt = child.GetComponent<Text>().text;
+            string[] strArray = oldTxt.Split(new char[1] { ':' });
+
+            int time = int.Parse(strArray[0]) * 60 + int.Parse(strArray[1]);
+            time *= 2;
+            child.GetComponent<Text>().text = (time / 60).ToString() + ":" + string.Format("{0:d2}", (time % 60));
+        }
+    }
+
 
 }

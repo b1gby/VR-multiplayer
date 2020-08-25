@@ -267,6 +267,9 @@
     <Reference Include="websocket-sharp">
       <HintPath>D:/Unity project/VR-multiplayer/VR-demo/Assets/Photon/PhotonLibs/WebSocket/websocket-sharp.dll</HintPath>
     </Reference>
+    <Reference Include="Valve.Newtonsoft.Json">
+      <HintPath>D:/Unity project/VR-multiplayer/VR-demo/Assets/SteamVR/Input/Plugins/JSON.NET/Valve.Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="nunit.framework">
       <HintPath>D:/Unity project/VR-multiplayer/VR-demo/Library/PackageCache/com.unity.ext.nunit@1.0.0/net35/unity-custom/nunit.framework.dll</HintPath>
     </Reference>

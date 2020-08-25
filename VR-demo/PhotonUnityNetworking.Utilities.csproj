@@ -292,6 +292,9 @@
     <Reference Include="websocket-sharp">
       <HintPath>D:/Unity project/VR-multiplayer/VR-demo/Assets/Photon/PhotonLibs/WebSocket/websocket-sharp.dll</HintPath>
     </Reference>
+    <Reference Include="Valve.Newtonsoft.Json">
+      <HintPath>D:/Unity project/VR-multiplayer/VR-demo/Assets/SteamVR/Input/Plugins/JSON.NET/Valve.Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="netstandard">
       <HintPath>D:/Unity/Editor/2019.3.15f1/Editor/Data/NetStandard/ref/2.0.0/netstandard.dll</HintPath>
     </Reference>
