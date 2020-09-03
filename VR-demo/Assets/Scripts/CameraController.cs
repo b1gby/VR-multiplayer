@@ -59,6 +59,11 @@ public class CameraController : MonoBehaviourPun
     {
         // The transform target may not destroy on level load, 
         // so we need to cover corner cases where the Main Camera is different everytime we load a new scene, and reconnect when that happens
+
+        if(!photonView.IsMine)
+        {
+            return;
+        }
         if (isFollowing)
         {
             OnStartFollowing();
@@ -89,7 +94,8 @@ public class CameraController : MonoBehaviourPun
 
     public void OnStartFollowing()
     {
-        cameraTransform = Camera.main.transform;
+        //cameraTransform = Camera.main.transform;
+        cameraTransform = this.transform.Find("OVRCameraRig").transform;
         // we don't smooth anything, we go straight to the right camera shot
 
     }
@@ -129,11 +135,13 @@ public class CameraController : MonoBehaviourPun
     //first-person view
     void LookAsFirstPersonView()
     {
-        cameraTransform.position = this.transform.position + new Vector3(0, 1.6f, 0.1f);
+        //cameraTransform.position = this.transform.position + new Vector3(0, 1.6f, 0.1f);
         //cameraTransform.LookAt(cameraTransform.position);
 
-        mouseX = Input.GetAxis("Mouse X") * mouseSensitivity * Time.deltaTime;
-        mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity * Time.deltaTime;
+        Vector2 secondaryAxis = OVRInput.Get(OVRInput.Axis2D.SecondaryThumbstick);
+        //mouseX = Input.GetAxis("Mouse X") * mouseSensitivity * Time.deltaTime;
+        //mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity * Time.deltaTime;
+        mouseX = secondaryAxis.x * mouseSensitivity * Time.deltaTime;
 
         xRotation -= mouseY;
         xRotation = Mathf.Clamp(xRotation, -50f, 50f); //限制相机俯仰高度（-50，50）

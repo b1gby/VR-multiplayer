@@ -6,7 +6,9 @@ using System;
 using System.Collections;
 using UnityEditor;
 using UnityEngine.UI;
-
+using Oculus.Platform;
+using Oculus.Platform.Models;
+using UnityEngine.EventSystems;
 
 public class PlayerController : MonoBehaviourPun, IPunObservable
 {
@@ -86,16 +88,21 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
     private TimelineUIController timelineUIController;
     private float timelineSize = 60;
 
-    private List<Transform> snapMoveList;
+    private List<Transform> targetTransformList;
     private List<Vector3> snapMovePosList;
     private bool isMoveSnapList = false;
+
+    public GameObject leftController;
+    public GameObject rightController;
 
     private float[,] snapDisplayList = { {1024*2/8,768*3/5 }, { 1024 * 3 / 8, 768 * 4/ 5 }, 
         { 1024 * 4/ 8, 768 * 3 / 5 },{ 1024 * 5 / 8, 768 * 4 / 5 }, { 1024 * 6 / 8, 768 * 3/ 5 } ,
         { 1024 * 6 / 8, 768 * 2/ 5 },{ 1024 * 5 / 8, 768 * 1 / 5 },{ 1024 * 4 / 8, 768 * 2 / 5 },
         { 1024 * 3 / 8, 768 * 1/ 5 },{ 1024 * 2 / 8, 768 * 2 / 5 }
     };
-
+    private bool isMoveGO;
+    private bool isMoveDownGO;
+    private List<GameObject> outlineTargets;
     void Awake()
     {
         if(!m_rigidBody) { gameObject.GetComponent<Rigidbody>(); }
@@ -104,13 +111,24 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
 
     void Start()
     {
+       
+
         startTime = GameManager.startTime;
         m_viewID = this.photonView.ViewID.ToString();
         m_r = UnityEngine.Random.value * 256;
         m_g = UnityEngine.Random.value * 256;
         m_b = UnityEngine.Random.value * 256;
         CameraController _cameraController = this.gameObject.GetComponent<CameraController>();
-        cameraTransform = Camera.main.transform;
+        //cameraTransform = Camera.main.transform;
+        if(photonView.IsMine)
+        {
+            cameraTransform = this.transform.Find("OVRCameraRig").transform;
+            GameObject UIforSnapshot = GameObject.Find("UIforSnapshot");
+            UIforSnapshot.GetComponent<Canvas>().worldCamera = cameraTransform.GetChild(0).GetChild(1).GetComponent<Camera>();
+            GameObject InputFieldCanvas = GameObject.Find("InputFieldCanvas");
+            InputFieldCanvas.GetComponent<Canvas>().worldCamera = cameraTransform.GetChild(0).GetChild(1).GetComponent<Camera>();
+        }
+        
 
         hasLockTip = GameObject.Find("HasLockTip").transform.GetComponent<Text>();
         isSelectedTip = GameObject.Find("IsSelectedTip").transform.GetComponent<Text>();
@@ -133,8 +151,10 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
 
         timelineUIController = TimelineUI.GetComponent<TimelineUIController>();
 
-        snapMoveList = new List<Transform>();
+        targetTransformList = new List<Transform>();
         snapMovePosList = new List<Vector3>();
+
+        outlineTargets = new List<GameObject>();
 
         if (_cameraController != null)
         {
@@ -214,7 +234,7 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
             GameObject[] sendTargets = GameObject.FindGameObjectsWithTag(m_viewID);
 
             //if(targetTransform!=null)
-            if (sendTargets.Length != 0 && isDragObjectWithoutLock)
+            if (sendTargets.Length != 0 && isMoveGO)
             {
                 stream.SendNext("syncSelectTarget:" + sendTargets.Length.ToString());
                 foreach (GameObject per_sendTarget in sendTargets)
@@ -435,11 +455,20 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
                 GameObject Button = new GameObject("Button", typeof(Button), typeof(RectTransform), typeof(Image), typeof(DeltaTime));
                 Button.transform.SetParent(TimelineUI.transform.GetChild(2));
                 Button.name = tmp.name + "btn";
-                Button.GetComponent<RectTransform>().sizeDelta = new Vector2(10, 10);
-                Button.GetComponent<RectTransform>().anchoredPosition = new Vector2(recvDeltaTime / timelineSize * 768 - 384, 128);
+                Button.transform.localRotation = Quaternion.identity;
+                Button.transform.localScale = Vector3.one;
+                Button.GetComponent<RectTransform>().sizeDelta = new Vector2(30, 30);
+                Button.GetComponent<RectTransform>().anchoredPosition3D = new Vector3(recvDeltaTime / timelineSize * 768 - 384, 128, 0);
                 Button.GetComponent<DeltaTime>().CreateDeltaTime = recvDeltaTime;
                 Button.GetComponent<Button>().onClick.AddListener(() =>ClickSnapBtn(Button.name));
                 Button.GetComponent<Image>().color = new Color(1, 0, 0);
+                //Button.GetComponent<Button>().targetGraphic = Button.GetComponent<Image>();
+                //ColorBlock cb = new ColorBlock();
+                //cb.normalColor = Color.white;
+                //cb.highlightedColor = new Color(0f / 255f, 153f / 255f, 255f / 255f);
+                //cb.pressedColor = new Color(155f / 255f, 138f / 255f, 255f / 255f);
+                //cb.selectedColor = new Color(5f / 255f, 0f / 255f, 255f / 255f);
+                //Button.GetComponent<Button>().colors = cb;
 
                 while (recvDeltaTime > timelineSize)
                 {
@@ -545,7 +574,28 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
         // record snapshot
         RecordSnapShots();
 
-        
+
+        // markGO
+        if (OVRInput.Get(OVRInput.Axis1D.PrimaryIndexTrigger) > 0.55f)
+        {
+            MarkGO();
+        }
+
+        // moveGO
+        if (OVRInput.Get(OVRInput.Axis1D.PrimaryHandTrigger) >= 0.99f)
+        {
+            isMoveGO = true;
+        }
+        else if(OVRInput.Get(OVRInput.Axis1D.PrimaryHandTrigger) < 0.35f)
+        {
+            if(isMoveGO)
+            {
+                isMoveDownGO = true;
+            }
+            isMoveGO = false;
+        }
+        MoveGO();
+
         m_wasGrounded = m_isGrounded;
          
     }
@@ -677,7 +727,7 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
         float v = Input.GetAxis("Vertical");
         float h = Input.GetAxis("Horizontal");
 
-        Transform camera = Camera.main.transform;
+        //Transform camera = Camera.main.transform;
 
         if (Input.GetKey(KeyCode.LeftShift))
         {
@@ -688,10 +738,21 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
         m_currentV = Mathf.Lerp(m_currentV, v, Time.deltaTime * m_interpolation);
         m_currentH = Mathf.Lerp(m_currentH, h, Time.deltaTime * m_interpolation);
 
-        Vector3 direction = camera.forward * m_currentV + camera.right * m_currentH;
+        Vector3 direction;
+        if(OVRInput.Get(OVRInput.Axis1D.SecondaryHandTrigger) >= 0.99f)
+        {
+            direction = cameraTransform.up * m_currentV + cameraTransform.right * m_currentH;
+            m_rigidBody.useGravity = false;
+        }
+        else
+        {
+            direction = cameraTransform.forward * m_currentV + cameraTransform.right * m_currentH;
+            //direction.y = 0;
+        }
+        
 
         float directionLength = direction.magnitude;
-        direction.y = 0;
+        
         direction = direction.normalized * directionLength;
 
         if (direction != Vector3.zero)
@@ -706,21 +767,169 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
     {
         bool jumpCooldownOver = (Time.time - m_jumpTimeStamp) >= m_minJumpInterval;
 
-        if (jumpCooldownOver && m_isGrounded && Input.GetKey(KeyCode.Space))
+        if (jumpCooldownOver && m_isGrounded && OVRInput.Get(OVRInput.Axis1D.SecondaryIndexTrigger)>0.55f)
         {
             m_jumpTimeStamp = Time.time;
             m_rigidBody.AddForce(Vector3.up * m_jumpForce, ForceMode.Impulse);
         }
     }
 
+    private void MarkGO()
+    {
+        leftController = FindObjectOfType<DisplayControllerLine>().leftController;
+        rightController = FindObjectOfType<DisplayControllerLine>().rightController;
+        
+        RaycastHit controllerTarget;
+
+        if (Physics.Raycast(leftController.transform.position, leftController.transform.forward,
+            out controllerTarget, 2f))
+        {
+            targetTransform = controllerTarget.transform;
+        }
+
+        // select other people is controlling
+        int parseTag;
+        if (int.TryParse(targetTransform.tag, out parseTag))
+        {
+            if (parseTag != int.Parse(m_viewID) && parseTag >= 1001 && parseTag <= 10000)
+            {
+                isSelectedTip.GetComponent<Timer>().startTimer(3f);
+            }
+        }
+
+        if (targetTransform.tag == "Everyone" || targetTransform.tag == "Onlyone" || targetTransform.tag == m_viewID )
+        {
+            if (targetTransform.GetComponent<Grabbable>().CurColor == Color.white)
+            {
+                targetTransform.GetComponent<Grabbable>().SetColor(FindObjectOfType<GrabManager>().OutlineColorHighlighted);
+                targetTransformList.Add(targetTransform);
+            }
+            else
+            {
+                targetTransform.GetComponent<Grabbable>().ClearColor();
+                targetTransformList.Remove(targetTransform);
+            }
+        }
+            
+
+    }
+
+    private void MoveGO()
+    {
+        if(isMoveGO)
+        {
+            foreach(Transform tf in targetTransformList)
+            {
+                if (tf.tag == "Onlyone")
+                {
+                    LockDispatcher dispatcher = tf.GetComponent<LockDispatcher>();
+                    if (dispatcher.hasLock)
+                    {
+                        hasLockTip.GetComponent<Timer>().startTimer(3f);
+                    }
+                    else
+                    {
+                        // find OnlyoneContainer
+                        Transform containerT = tf.parent;
+                        while (containerT.tag != "OnlyoneContainer")
+                        {
+                            containerT = containerT.parent;
+                        }
+
+
+                        // find child in OnlyoneContainer
+                        Transform[] allChild = containerT.GetComponentsInChildren<Transform>();
+                        foreach (Transform child in allChild)
+                        {
+                            if (child.tag == "Onlyone" && child !=tf)
+                            {
+                                LockDispatcher allDispatcher = child.GetComponent<LockDispatcher>();
+                                allDispatcher.GetLock();
+                            }
+                        }
+                        isLockStatusChanged = true;
+                        tf.position = leftController.transform.position + leftController.transform.forward;
+                    }
+                }
+                else if (tf.tag == m_viewID)
+                {
+                    tf.position = leftController.transform.position + leftController.transform.forward;
+                }
+                else if (GameObject.Find(tf.name + "(Clone)" + m_viewID) == null)
+                {
+                    Transform tmp = Instantiate(tf.gameObject, tf.parent).transform;
+                    //Material[] m = new Material[]
+                    //    {
+                    //        Resources.Load("Materials/New_Chair_Material") as Material,
+                    //    };
+
+                    //m[0].color = new Color(m_r/255,m_g/255,m_b/255);
+
+                    //targetTransform.SetPositionAndRotation(Vector3.zero, targetTransform.parent.rotation);
+                    //targetTransform.localScale = Vector3.one;
+                    tmp.name += m_viewID;
+                    tmp.GetComponent<MeshRenderer>().materials[0].color = new Color(m_r / 255, m_g / 255, m_b / 255);
+                    tmp.tag = m_viewID;
+                    tmp.position = leftController.transform.position + leftController.transform.forward;
+                }
+                else
+                {
+                    Transform tmp = GameObject.Find(tf.name + "(Clone)" + m_viewID).transform;
+                    tmp.position = leftController.transform.position + leftController.transform.forward;
+                }
+                
+            }
+        }
+        else if(isMoveDownGO)
+        {
+            foreach (Transform transform in targetTransformList)
+            {
+                if (targetTransform.tag == "Onlyone")
+                {
+                    // find OnlyoneContainer
+                    Transform containerT = targetTransform.parent;
+                    while (containerT.tag != "OnlyoneContainer")
+                    {
+                        containerT = containerT.parent;
+                    }
+
+                    //Debug.Log("T:" + containerT.name);
+                    // find child in OnlyoneContainer
+                    Transform[] allChild = containerT.GetComponentsInChildren<Transform>();
+                    foreach (Transform child in allChild)
+                    {
+                        if (child.tag == "Onlyone")
+                        {
+                            LockDispatcher allDispatcher = child.GetComponent<LockDispatcher>();
+                            allDispatcher.ReleaseLock();
+                        }
+                    }
+                    isSleepToUnlock = true;
+                    time_sleepToUnlock = 0.2f;
+                    
+                }
+                transform.GetComponent<Grabbable>().ClearColor();
+            }
+            targetTransformList.Clear();
+            isMoveDownGO = false;
+        }
+    }
+
     private void RecordSnapShots()
     {
-        if (Input.GetKeyDown(KeyCode.G) && !is_takingSnapShots)
+        if (OVRInput.GetDown(OVRInput.RawButton.B) && !is_takingSnapShots)
         {
-            RaycastHit target;
-            List<GameObject> outlineTargets = Camera.main.transform.GetComponent<DrawOutline>().targets;
+            leftController = FindObjectOfType<DisplayControllerLine>().leftController;
+            rightController = FindObjectOfType<DisplayControllerLine>().rightController;
 
-            if (Physics.Raycast(cameraTransform.position, cameraTransform.forward, out target, 100f))
+            GameObject eventSystem = GameObject.Find("EventSystem");
+            eventSystem.GetComponent<OVRInputModule>().rayTransform = rightController.transform;
+
+            RaycastHit target;
+            //List<GameObject> outlineTargets = Camera.main.transform.GetComponent<DrawOutline>().targets;
+
+            if (Physics.Raycast(rightController.transform.position, rightController.transform.forward,
+            out target, 2f))
             {
                 if (target.transform.parent.tag == "EveryoneContainer")
                 {
@@ -730,10 +939,10 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
                         {
                             continue;
                         }
+                        child.GetComponent<Grabbable>().SetColor(FindObjectOfType<GrabManager>().OutlineColorHighlighted);
                         outlineTargets.Add(child.gameObject);
                         if (child.transform.tag == m_viewID)
                         {
-
                             outlineTargets.Remove(GameObject.Find(child.name.Replace("(Clone)" + m_viewID, "")));
                         }
                         //if (child.childCount != 0)
@@ -762,9 +971,8 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
             is_takingSnapShots = true;
         }
 
-        if (Input.GetKeyUp(KeyCode.G) && is_takingSnapShots)
+        if (OVRInput.GetUp(OVRInput.RawButton.B) && is_takingSnapShots)
         {
-            List<GameObject> outlineTargets = Camera.main.transform.GetComponent<DrawOutline>().targets;
             DateTime nowTime = DateTime.Now.ToLocalTime();
             newCreateSnap = new GameObject(nowTime.ToString("yyyy-MM-dd HH:mm:ss"));
             newCreateSnap.transform.SetParent(snapShotsGameObject.transform);
@@ -800,18 +1008,29 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
             GameObject button = new GameObject("Button", typeof(Button), typeof(RectTransform), typeof(Image), typeof(DeltaTime));
             button.transform.SetParent(TimelineUI.transform.GetChild(2));
             button.name = newCreateSnap.name + "btn";
-            button.GetComponent<RectTransform>().sizeDelta = new Vector2(10, 10);
-            button.GetComponent<RectTransform>().anchoredPosition = new Vector2(createDeltaTime / timelineSize * 768-384,128);
+            button.transform.localRotation = Quaternion.identity;
+            button.transform.localScale = Vector3.one;
+            button.GetComponent<RectTransform>().sizeDelta = new Vector2(30, 30);
+            button.GetComponent<RectTransform>().anchoredPosition3D = new Vector3(createDeltaTime / timelineSize * 768-384,128,0);
             button.GetComponent<DeltaTime>().CreateDeltaTime = createDeltaTime;
             button.GetComponent<Button>().onClick.AddListener(()=>ClickSnapBtn(button.name));
+            //button.GetComponent<Button>().targetGraphic = button.GetComponent<Image>();
+            //ColorBlock cb = new ColorBlock();
+            //cb.normalColor = Color.white;
+            //cb.highlightedColor = new Color(0f / 255f, 153f / 255f, 255f / 255f);
+            //cb.pressedColor = new Color(155f / 255f, 138f / 255f, 255f / 255f);
+            //cb.selectedColor = new Color(5f / 255f, 0f / 255f, 255f / 255f);
+            //button.GetComponent<Button>().colors = cb;
 
-            while(createDeltaTime > timelineSize)
+            while (createDeltaTime > timelineSize)
             {
                 timelineSize += 60;
                 ResortTimeline();
             }
-
-            outlineTargets.Clear();
+            foreach(GameObject child in outlineTargets)
+            {
+                child.GetComponent<Grabbable>().ClearColor();
+            }
             isShareToOther = true;
             is_takingSnapShots = false;
         }
@@ -819,7 +1038,7 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
 
     private void DisplaySnapShots()
     {
-        if (Input.GetKeyDown(KeyCode.Tab))
+        if (Input.GetKeyDown(KeyCode.Tab) || OVRInput.GetDown(OVRInput.Button.Three))
         {
             m_pressGNum++;
             //Debug.Log(snapShotsGameObject.activeSelf);
@@ -841,15 +1060,15 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
             }
         }
 
-        if(isClickSnapBtn&& Input.GetMouseButtonUp(0))
+        if (isClickSnapBtn&& OVRInput.Get(OVRInput.Axis1D.SecondaryIndexTrigger) > 0.55f)
         {
-            float screenX = Input.mousePosition.x / Screen.width * 1024;
-            float screenY = Input.mousePosition.y / Screen.height * 768;
-            if(screenX<=512+20&&screenX>=512-20&&screenY<=640+20&&screenY>=640-20)
-            {
+            //float screenX = Input.mousePosition.x / Screen.width * 1024;
+            //float screenY = Input.mousePosition.y / Screen.height * 768;
+            //if(screenX<=512+20&&screenX>=512-20&&screenY<=640+20&&screenY>=640-20)
+            //{
                 is_displaySnapShotDetail = true;
                 isClickSnapBtn = false;
-            }
+            //}
         }
 
         //if (snapShotsGameObject.activeSelf)
@@ -921,7 +1140,7 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
             snapDetail.localScale = Vector3.one * 1.5f;
             detailTitleTxt.text = snapDetail.name;
             TimelineUI.SetActive(false);
-            if (Input.GetKeyDown(KeyCode.Escape))
+            if (OVRInput.Get(OVRInput.Axis1D.PrimaryIndexTrigger) > 0.55f)
             {
                 UI3dCamera.orthographicSize = 5;
                 TimelineUI.SetActive(true);
@@ -960,6 +1179,7 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
 
     private void ClickSnapBtn(string strBtnName)
     {
+        Debug.Log(strBtnName);
         foreach (Transform child in snapShotsGameObject.transform)
         { 
             child.localPosition = UI3dCamera.ScreenToWorldPoint(new Vector3(2000,640,5f));
@@ -1080,7 +1300,7 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
         //    newGo.name += m_viewID;
         //    newGo.GetComponent<MeshRenderer>().materials[0].color = new Color(m_r / 255, m_g / 255, m_b / 255);
         //    newGo.tag = m_viewID;
-        //    snapMoveList.Add(newGo);
+        //    targetTransformList.Add(newGo);
         //    isMoveSnapList = true;
         //}
     }
@@ -1091,7 +1311,7 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
         foreach(Transform child in btnContainer)
         {
             float childDeltaTime = child.GetComponent<DeltaTime>().CreateDeltaTime;
-            child.GetComponent<RectTransform>().anchoredPosition = new Vector2(childDeltaTime / timelineSize * 768 - 384, 128);
+            child.GetComponent<RectTransform>().anchoredPosition3D = new Vector3(childDeltaTime / timelineSize * 768 - 384, 128, 0);
         }
 
         Transform txtContainer = TimelineUI.transform.GetChild(0);

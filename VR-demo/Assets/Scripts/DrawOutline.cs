@@ -29,7 +29,7 @@ public class DrawOutline : PostEffectsBase
 
     private void SetupAddtionalCamera()
     {
-        additionalCamera.CopyFrom(Camera.main);
+        additionalCamera.CopyFrom(GameObject.Find("CenterEyeAnchor").GetComponent<Camera>());
         additionalCamera.clearFlags = CameraClearFlags.Color;
         additionalCamera.backgroundColor = Color.black;
         additionalCamera.cullingMask = 1 << LayerMask.NameToLayer("PostEffect");       // 标记渲染"PostEffect"层的物体
