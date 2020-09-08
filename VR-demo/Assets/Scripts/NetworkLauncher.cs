@@ -25,7 +25,6 @@ public class NetworkLauncher : MonoBehaviourPunCallbacks
     public override void OnJoinedRoom()
     {
         base.OnJoinedRoom();
-
         PhotonNetwork.Instantiate("Player", new Vector3(0, 5, -10), Quaternion.identity, 0);
     }
 }

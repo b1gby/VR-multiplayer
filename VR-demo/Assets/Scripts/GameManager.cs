@@ -42,13 +42,14 @@ public class GameManager : MonoBehaviourPunCallbacks
         btnBackTrack = GameObject.Find("BtnBackTrack");
         btnBackTrack.transform.GetComponent<RectTransform>().anchoredPosition = new Vector2(Screen.width / 2-80, -Screen.height / 2+25);
 
-        btnShare = GameObject.Find("BtnShare");
-        btnShare.transform.GetComponent<RectTransform>().anchoredPosition = new Vector2(-Screen.width / 2+80, -Screen.height / 2+25);
+        //btnShare = GameObject.Find("BtnShare");
+        //btnShare.transform.GetComponent<RectTransform>().anchoredPosition = new Vector2(-Screen.width / 2+80, -Screen.height / 2+25);
 
         UI3dRawImage.SetActive(false);
         TimelineUI.SetActive(false);
+        UI3dRawImage.transform.parent.GetChild(5).gameObject.SetActive(false);
         btnBackTrack.SetActive(false);
-        btnShare.SetActive(false);
+        //btnShare.SetActive(false);
         GameObject[] addOnlyOneTags = GameObject.FindGameObjectsWithTag("Onlyone");
         foreach(GameObject per_object in addOnlyOneTags)
         {

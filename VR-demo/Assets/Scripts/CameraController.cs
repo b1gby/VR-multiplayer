@@ -26,7 +26,7 @@ public class CameraController : MonoBehaviourPun
     private float smoothSpeed = 0.125f;
 
     // cached transform of the target
-    private Transform cameraTransform;
+    public Transform cameraTransform;
 
     // maintain a flag internally to reconnect if target is lost or camera is switched
     bool isFollowing;
@@ -72,18 +72,7 @@ public class CameraController : MonoBehaviourPun
         // only follow is explicitly declared
         if (cameraTransform != null)
         {
-            if (Input.GetKeyDown(KeyCode.T))
-            {
-                Tcount++;
-            }
-            if (Tcount % 2 == 0)
-            {
-                LookAsFirstPersonView();
-            }
-            else
-            {
-                Follow();
-            }
+            LookAsFirstPersonView();
         }
     }
 

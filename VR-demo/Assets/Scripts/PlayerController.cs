@@ -29,8 +29,7 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
 
     private readonly float m_interpolation = 10;
     private readonly float m_runScale = 2.0f;
-
-
+    private bool isMoveKeyBoard;
     private bool m_wasGrounded;
     private Vector3 m_currentDirection = Vector3.zero;
 
@@ -41,7 +40,7 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
     
     private List<Collider> m_collisions = new List<Collider>();
 
-    Transform cameraTransform;
+    public Transform cameraTransform;
     private Transform targetTransform;
     private bool isDragObjectWithoutLock = false;
     private bool isDragObjectWithLock = false;
@@ -95,6 +94,8 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
     public GameObject leftController;
     public GameObject rightController;
 
+    private bool isOnAir = false;
+
     private float[,] snapDisplayList = { {1024*2/8,768*3/5 }, { 1024 * 3 / 8, 768 * 4/ 5 }, 
         { 1024 * 4/ 8, 768 * 3 / 5 },{ 1024 * 5 / 8, 768 * 4 / 5 }, { 1024 * 6 / 8, 768 * 3/ 5 } ,
         { 1024 * 6 / 8, 768 * 2/ 5 },{ 1024 * 5 / 8, 768 * 1 / 5 },{ 1024 * 4 / 8, 768 * 2 / 5 },
@@ -103,6 +104,12 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
     private bool isMoveGO;
     private bool isMoveDownGO;
     private List<GameObject> outlineTargets;
+
+    public GameObject KeyBoard;
+    private bool isDragKeyBoard;
+    private bool isAdjustCamera;
+    private float time_adjustCamera = 2.2f;
+
     void Awake()
     {
         if(!m_rigidBody) { gameObject.GetComponent<Rigidbody>(); }
@@ -111,8 +118,8 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
 
     void Start()
     {
-       
-
+        isAdjustCamera = true;
+        
         startTime = GameManager.startTime;
         m_viewID = this.photonView.ViewID.ToString();
         m_r = UnityEngine.Random.value * 256;
@@ -122,11 +129,13 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
         //cameraTransform = Camera.main.transform;
         if(photonView.IsMine)
         {
-            cameraTransform = this.transform.Find("OVRCameraRig").transform;
+            //cameraTransform = this.transform.Find("OVRCameraRig").transform;
             GameObject UIforSnapshot = GameObject.Find("UIforSnapshot");
             UIforSnapshot.GetComponent<Canvas>().worldCamera = cameraTransform.GetChild(0).GetChild(1).GetComponent<Camera>();
-            GameObject InputFieldCanvas = GameObject.Find("InputFieldCanvas");
-            InputFieldCanvas.GetComponent<Canvas>().worldCamera = cameraTransform.GetChild(0).GetChild(1).GetComponent<Camera>();
+            //GameObject InputFieldCanvas = GameObject.Find("InputFieldCanvas");
+            //InputFieldCanvas.GetComponent<Canvas>().worldCamera = cameraTransform.GetChild(0).GetChild(1).GetComponent<Camera>();
+            GameObject PredictionCanvas = GameObject.Find("PredictionCanvas");
+            PredictionCanvas.GetComponent<Canvas>().worldCamera = cameraTransform.GetChild(0).GetChild(1).GetComponent<Camera>();
         }
         
 
@@ -155,6 +164,8 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
         snapMovePosList = new List<Vector3>();
 
         outlineTargets = new List<GameObject>();
+
+        KeyBoard = GameObject.Find("KeyBoard");
 
         if (_cameraController != null)
         {
@@ -499,6 +510,17 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
             targetTransform.position = cameraTransform.position + cameraTransform.forward * 2f;
         }
         
+        if(isAdjustCamera && photonView.IsMine)
+        {
+            time_adjustCamera -= Time.deltaTime;
+            if(time_adjustCamera <=0)
+            {
+                cameraTransform.gameObject.SetActive(false);
+                cameraTransform.gameObject.SetActive(true);
+                isAdjustCamera = false;
+            }
+            
+        }
 
         if(isSleepToUnlock)
         {
@@ -557,19 +579,19 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
         JumpingAndLanding();
         
 
-        // pickup
-        if (Input.GetKeyDown(KeyCode.E))
-        {
-            //Debug.Log(isDragObject);
-            if(!isDragObjectWithLock && !isDragObjectWithoutLock)
-            {
-                SelectObject();
-            }
-            else
-            {
-                SelectDownObject();
-            }
-        }
+        //// pickup
+        //if (Input.GetKeyDown(KeyCode.E))
+        //{
+        //    //Debug.Log(isDragObject);
+        //    if(!isDragObjectWithLock && !isDragObjectWithoutLock)
+        //    {
+        //        SelectObject();
+        //    }
+        //    else
+        //    {
+        //        SelectDownObject();
+        //    }
+        //}
 
         // record snapshot
         RecordSnapShots();
@@ -596,9 +618,40 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
         }
         MoveGO();
 
+        //move KeyBoard to eye
+        if(IsFocusOnInputText() && !isMoveKeyBoard)
+        {
+            KeyBoard.transform.position = cameraTransform.position + cameraTransform.forward*0.8f;
+            isMoveKeyBoard = true;
+        }
+        if (OVRInput.Get(OVRInput.Axis1D.SecondaryHandTrigger) >= 0.99f)
+        {
+            RaycastHit target;
+            rightController = FindObjectOfType<DisplayControllerLine>().rightController;
+            if (Physics.Raycast(rightController.transform.position, rightController.transform.forward, out target, 100f))
+            {
+                if(target.transform.tag=="Key")
+                {
+                    isDragKeyBoard = true;
+                }
+                //Debug.Log(targetTransform.name);
+            }
+        }
+        if (OVRInput.Get(OVRInput.Axis1D.SecondaryHandTrigger) <= 0.35f)
+        {
+            isDragKeyBoard = false;
+        }
+        if(isDragKeyBoard)
+        {
+            KeyBoard.transform.position = rightController.transform.position;
+            KeyBoard.transform.rotation = rightController.transform.rotation;
+        }
+
         m_wasGrounded = m_isGrounded;
          
     }
+
+
 
     private void SelectObject()
     {
@@ -743,6 +796,8 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
         {
             direction = cameraTransform.up * m_currentV + cameraTransform.right * m_currentH;
             m_rigidBody.useGravity = false;
+            m_rigidBody.isKinematic = true;
+            isOnAir = true;
         }
         else
         {
@@ -787,29 +842,33 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
             targetTransform = controllerTarget.transform;
         }
 
-        // select other people is controlling
-        int parseTag;
-        if (int.TryParse(targetTransform.tag, out parseTag))
+        if(targetTransform)
         {
-            if (parseTag != int.Parse(m_viewID) && parseTag >= 1001 && parseTag <= 10000)
+            // select other people is controlling
+            int parseTag;
+            if (int.TryParse(targetTransform.tag, out parseTag))
             {
-                isSelectedTip.GetComponent<Timer>().startTimer(3f);
+                if (parseTag != int.Parse(m_viewID) && parseTag >= 1001 && parseTag <= 10000)
+                {
+                    isSelectedTip.GetComponent<Timer>().startTimer(3f);
+                }
             }
-        }
 
-        if (targetTransform.tag == "Everyone" || targetTransform.tag == "Onlyone" || targetTransform.tag == m_viewID )
-        {
-            if (targetTransform.GetComponent<Grabbable>().CurColor == Color.white)
+            if (targetTransform.tag == "Everyone" || targetTransform.tag == "Onlyone" || targetTransform.tag == m_viewID)
             {
-                targetTransform.GetComponent<Grabbable>().SetColor(FindObjectOfType<GrabManager>().OutlineColorHighlighted);
-                targetTransformList.Add(targetTransform);
-            }
-            else
-            {
-                targetTransform.GetComponent<Grabbable>().ClearColor();
-                targetTransformList.Remove(targetTransform);
+                if (targetTransform.GetComponent<Grabbable>().CurColor == Color.white)
+                {
+                    targetTransform.GetComponent<Grabbable>().SetColor(FindObjectOfType<GrabManager>().OutlineColorHighlighted);
+                    targetTransformList.Add(targetTransform);
+                }
+                else
+                {
+                    targetTransform.GetComponent<Grabbable>().ClearColor();
+                    targetTransformList.Remove(targetTransform);
+                }
             }
         }
+        
             
 
     }
@@ -931,44 +990,49 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
             if (Physics.Raycast(rightController.transform.position, rightController.transform.forward,
             out target, 2f))
             {
-                if (target.transform.parent.tag == "EveryoneContainer")
+                if (target.transform)
                 {
-                    foreach (Transform child in target.transform.parent)
+                    if (target.transform.parent.tag == "EveryoneContainer")
                     {
-                        if(child.tag!=m_viewID.ToString() && child.tag!="Everyone")
+                        foreach (Transform child in target.transform.parent)
                         {
-                            continue;
+                            if (child.tag != m_viewID.ToString() && child.tag != "Everyone")
+                            {
+                                continue;
+                            }
+                            child.GetComponent<Grabbable>().SetColor(FindObjectOfType<GrabManager>().OutlineColorHighlighted);
+                            outlineTargets.Add(child.gameObject);
+                            if (child.transform.tag == m_viewID)
+                            {
+                                outlineTargets.Remove(GameObject.Find(child.name.Replace("(Clone)" + m_viewID, "")));
+                            }
+                            //if (child.childCount != 0)
+                            //{
+                            //    bool hasChildNotMine = false;
+                            //    foreach (Transform childOfChild in child.transform)
+                            //    {
+                            //        if(childOfChild.tag==m_viewID)
+                            //        {
+                            //            outlineTargets.Add(childOfChild.gameObject);
+                            //            hasChildNotMine = true;
+                            //        }
+                            //    }
+                            //    if(!hasChildNotMine)
+                            //        outlineTargets.Add(child.gameObject);
+                            //}
+                            //else
+                            //{
+                            //    outlineTargets.Add(child.gameObject);
+                            //}
                         }
-                        child.GetComponent<Grabbable>().SetColor(FindObjectOfType<GrabManager>().OutlineColorHighlighted);
-                        outlineTargets.Add(child.gameObject);
-                        if (child.transform.tag == m_viewID)
-                        {
-                            outlineTargets.Remove(GameObject.Find(child.name.Replace("(Clone)" + m_viewID, "")));
-                        }
-                        //if (child.childCount != 0)
-                        //{
-                        //    bool hasChildNotMine = false;
-                        //    foreach (Transform childOfChild in child.transform)
-                        //    {
-                        //        if(childOfChild.tag==m_viewID)
-                        //        {
-                        //            outlineTargets.Add(childOfChild.gameObject);
-                        //            hasChildNotMine = true;
-                        //        }
-                        //    }
-                        //    if(!hasChildNotMine)
-                        //        outlineTargets.Add(child.gameObject);
-                        //}
-                        //else
-                        //{
-                        //    outlineTargets.Add(child.gameObject);
-                        //}
                     }
+                    targetTransform = target.transform;
+
+                    is_takingSnapShots = true;
+                    //Debug.Log(targetTransform.name);
                 }
-                targetTransform = target.transform;
-                //Debug.Log(targetTransform.name);
+
             }
-            is_takingSnapShots = true;
         }
 
         if (OVRInput.GetUp(OVRInput.RawButton.B) && is_takingSnapShots)
@@ -1038,15 +1102,16 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
 
     private void DisplaySnapShots()
     {
-        if (Input.GetKeyDown(KeyCode.Tab) || OVRInput.GetDown(OVRInput.Button.Three))
+        if (Input.GetKeyDown(KeyCode.Tab) || OVRInput.GetDown(OVRInput.Button.Four))
         {
             m_pressGNum++;
-            //Debug.Log(snapShotsGameObject.activeSelf);
+            Debug.Log(snapShotsGameObject.activeSelf);
             if (m_pressGNum%2!=0)
             {
                 //snapShotsGameObject.SetActive(true);
                 TimelineUI.SetActive(true);
                 UI3dRawImage.SetActive(true);
+                UI3dRawImage.transform.parent.GetChild(5).gameObject.SetActive(true);
                 Cursor.lockState = CursorLockMode.None;//锁定指针到视图中心
                 Cursor.visible = true;
             }
@@ -1055,6 +1120,7 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
                 //snapShotsGameObject.SetActive(false);
                 TimelineUI.SetActive(false);
                 UI3dRawImage.SetActive(false);
+                UI3dRawImage.transform.parent.GetChild(5).gameObject.SetActive(false);
                 Cursor.lockState = CursorLockMode.Locked;//锁定指针到视图中心
                 Cursor.visible = false;
             }
@@ -1204,6 +1270,7 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
 
         TimelineUI.SetActive(false);
         UI3dRawImage.SetActive(false);
+        UI3dRawImage.transform.parent.GetChild(5).gameObject.SetActive(false);
         btnBackTrack.SetActive(false);
         //btnShare.SetActive(false);
         detailTitleTxt.text = "";
@@ -1259,6 +1326,7 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
         TimelineUI.SetActive(false);
         UI3dRawImage.SetActive(false);
         btnBackTrack.SetActive(false);
+        UI3dRawImage.transform.parent.GetChild(5).gameObject.SetActive(false);
         //btnShare.SetActive(false);
         detailTitleTxt.text = "";
         Cursor.lockState = CursorLockMode.Locked;//锁定指针到视图中心
@@ -1333,4 +1401,12 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
     }
 
 
+    private bool IsFocusOnInputText()
+    {
+        if (EventSystem.current.currentSelectedGameObject == null)
+            return false;
+        if (EventSystem.current.currentSelectedGameObject.GetComponent<InputField>() != null)
+            return true;
+        return false;
+    }
 }

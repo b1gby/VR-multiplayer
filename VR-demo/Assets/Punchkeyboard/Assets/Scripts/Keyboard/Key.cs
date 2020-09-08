@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.UIElements;
 
 public class Key : MonoBehaviour
 {
@@ -13,6 +14,7 @@ public class Key : MonoBehaviour
 	public Color PressedKeycapColor;
 	public Color KeycapColor;
 	public Color InitialKeycapColor;
+	public InputField InputField;
 
 	protected Transform initialPosition;
 	private KeycodeAdder keycodeAdder;
@@ -41,6 +43,8 @@ public class Key : MonoBehaviour
 		initialPosition.parent = this.transform.parent;
 		initialPosition.localPosition = Vector3.zero;
 		initialPosition.localRotation = Quaternion.identity;
+
+		//InputField = GameObject.FindObjectOfType<TextFieldBehaviour>().gameObject.GetComponent<InputField>();
 
 		if(Rigidbody == null)
 		{
@@ -78,12 +82,15 @@ public class Key : MonoBehaviour
 				if (symbolSwitch)
 				{
 					keycodeAdder.SimulateAlternateKeyPress ();
+					//InputField.text += AlterateKeyCapChar;
 				}
 				else
 				{
 					keycodeAdder.SimulateKeyPress ();
+					//InputField.text += KeyCapChar;
 				}
-				keySoundController.StartKeySound (this.gameObject.transform);
+				
+				//keySoundController.StartKeySound (this.gameObject.transform);
 				checkForButton = false;
 			}
 		} else if (!checkForButton)

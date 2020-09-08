@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Photon.Pun;
+using UnityEngine.EventSystems;
 
 public class DisplayControllerLine : MonoBehaviourPun
 {
@@ -10,7 +11,10 @@ public class DisplayControllerLine : MonoBehaviourPun
     public GameObject rightController;
     public GameObject controllerLeftLine;
     public GameObject controllerRightLine;
+    public GameObject controllerLeftSphere;
+    public GameObject controllerRightSphere;
     public GameObject test;
+    private bool isAdded = false;
     // Start is called before the first frame update
     void Start()
     {
@@ -36,17 +40,37 @@ public class DisplayControllerLine : MonoBehaviourPun
         {
             leftController = this.transform.Find("controller_left").gameObject;
             rightController = this.transform.Find("controller_right").gameObject;
+
+            if (!isAdded)
+            {
+                leftController.AddComponent<KeyBoardControllerDemo>();
+                leftController.AddComponent<SteamVR_TrackedObjectDemo>();
+
+                rightController.AddComponent<KeyBoardControllerDemo>();
+                rightController.AddComponent<SteamVR_TrackedObjectDemo>();
+
+                leftController.GetComponent<SteamVR_TrackedObjectDemo>().index = SteamVR_TrackedObjectDemo.EIndex.Device1;
+                rightController.GetComponent<SteamVR_TrackedObjectDemo>().index = SteamVR_TrackedObjectDemo.EIndex.Device2;
+
+                GameObject eventSystem = GameObject.Find("EventSystem");
+                eventSystem.GetComponent<OVRInputModule>().rayTransform = rightController.transform;
+                isAdded = true;
+            }
+
             //Debug.Log(leftController.transform.forward);
             controllerLeftLine.GetComponent<LineRenderer>().SetPositions(new Vector3[]
             {
             leftController.transform.position,
-            leftController.transform.forward*2+leftController.transform.position,
+            leftController.transform.forward+leftController.transform.position,
             });
             controllerRightLine.GetComponent<LineRenderer>().SetPositions(new Vector3[]
             {
             rightController.transform.position,
-            rightController.transform.forward*2+rightController.transform.position,
+            rightController.transform.forward+rightController.transform.position,
             });
+
+            controllerLeftSphere.transform.position = leftController.transform.forward + leftController.transform.position;
+            controllerRightSphere.transform.position = rightController.transform.forward + rightController.transform.position;
         }
         catch
         {
