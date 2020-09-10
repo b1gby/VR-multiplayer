@@ -4,6 +4,7 @@ using System;
 using Oculus.Avatar;
 using System.Runtime.InteropServices;
 using System.Collections.Generic;
+using Photon.Pun;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -41,7 +42,7 @@ public class PacketRecordSettings
     internal float AccumulatedTime;
 };
 
-public class OvrAvatar : MonoBehaviour
+public class OvrAvatar : MonoBehaviourPun
 {
     [Header("Avatar")]
     public IntPtr sdkAvatar = IntPtr.Zero;
@@ -629,7 +630,7 @@ public class OvrAvatar : MonoBehaviour
 
     void Update()
     {
-        if (!OvrAvatarSDKManager.Instance || sdkAvatar == IntPtr.Zero || materialManager == null)
+        if (!OvrAvatarSDKManager.Instance || sdkAvatar == IntPtr.Zero || materialManager == null || (!photonView.IsMine && PhotonNetwork.IsConnected))
         {
             return;
         }

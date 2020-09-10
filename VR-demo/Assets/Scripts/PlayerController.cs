@@ -590,21 +590,21 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
 
         // jump
         JumpingAndLanding();
-        
 
-        //// pickup
-        //if (Input.GetKeyDown(KeyCode.E))
-        //{
-        //    //Debug.Log(isDragObject);
-        //    if(!isDragObjectWithLock && !isDragObjectWithoutLock)
-        //    {
-        //        SelectObject();
-        //    }
-        //    else
-        //    {
-        //        SelectDownObject();
-        //    }
-        //}
+
+        // pickup
+        if (Input.GetKeyDown(KeyCode.E))
+        {
+            //Debug.Log(isDragObject);
+            if (!isDragObjectWithLock && !isDragObjectWithoutLock)
+            {
+                SelectObject();
+            }
+            else
+            {
+                SelectDownObject();
+            }
+        }
 
         // record snapshot
         RecordSnapShots();
@@ -616,20 +616,20 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
             MarkGO();
         }
 
-        // moveGO
-        if (OVRInput.Get(OVRInput.Axis1D.PrimaryHandTrigger) >= 0.99f)
-        {
-            isMoveGO = true;
-        }
-        else if(OVRInput.Get(OVRInput.Axis1D.PrimaryHandTrigger) < 0.35f)
-        {
-            if(isMoveGO)
-            {
-                isMoveDownGO = true;
-            }
-            isMoveGO = false;
-        }
-        MoveGO();
+        //// moveGO
+        //if (OVRInput.Get(OVRInput.Axis1D.PrimaryHandTrigger) >= 0.99f)
+        //{
+        //    isMoveGO = true;
+        //}
+        //else if(OVRInput.Get(OVRInput.Axis1D.PrimaryHandTrigger) < 0.35f)
+        //{
+        //    if(isMoveGO)
+        //    {
+        //        isMoveDownGO = true;
+        //    }
+        //    isMoveGO = false;
+        //}
+        //MoveGO();
 
         //move KeyBoard to eye
         if(IsFocusOnInputText() && !isMoveKeyBoard)
