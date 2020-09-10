@@ -43,14 +43,14 @@ public class DisplayControllerLine : MonoBehaviourPun
 
             if (!isAdded)
             {
-                leftController.AddComponent<KeyBoardControllerDemo>();
-                leftController.AddComponent<SteamVR_TrackedObjectDemo>();
+                //leftController.AddComponent<KeyBoardControllerDemo>();
+                //leftController.AddComponent<SteamVR_TrackedObjectDemo>();
 
-                rightController.AddComponent<KeyBoardControllerDemo>();
-                rightController.AddComponent<SteamVR_TrackedObjectDemo>();
+                //rightController.AddComponent<KeyBoardControllerDemo>();
+                //rightController.AddComponent<SteamVR_TrackedObjectDemo>();
 
-                leftController.GetComponent<SteamVR_TrackedObjectDemo>().index = SteamVR_TrackedObjectDemo.EIndex.Device1;
-                rightController.GetComponent<SteamVR_TrackedObjectDemo>().index = SteamVR_TrackedObjectDemo.EIndex.Device2;
+                //leftController.GetComponent<SteamVR_TrackedObjectDemo>().index = SteamVR_TrackedObjectDemo.EIndex.Device1;
+                //rightController.GetComponent<SteamVR_TrackedObjectDemo>().index = SteamVR_TrackedObjectDemo.EIndex.Device2;
 
                 GameObject eventSystem = GameObject.Find("EventSystem");
                 eventSystem.GetComponent<OVRInputModule>().rayTransform = rightController.transform;
@@ -71,6 +71,7 @@ public class DisplayControllerLine : MonoBehaviourPun
 
             controllerLeftSphere.transform.position = leftController.transform.forward + leftController.transform.position;
             controllerRightSphere.transform.position = rightController.transform.forward + rightController.transform.position;
+
         }
         catch
         {

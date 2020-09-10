@@ -109,6 +109,8 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
     private bool isDragKeyBoard;
     private bool isAdjustCamera;
     private float time_adjustCamera = 2.2f;
+    private bool isReadyChangeColor = false;
+    private float time_readyChangeGOColor = 0.5f;
 
     void Awake()
     {
@@ -522,7 +524,16 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
             
         }
 
-        if(isSleepToUnlock)
+        if (!isReadyChangeColor)
+        {
+            time_readyChangeGOColor -= Time.deltaTime;
+            if (time_readyChangeGOColor <= 0)
+            {
+                isReadyChangeColor = true;
+            }
+        }
+
+        if (isSleepToUnlock)
         {
             time_sleepToUnlock -= Time.deltaTime;
             if (time_sleepToUnlock <= 0)
@@ -556,6 +567,8 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
 
             isMoveSnapList = false;
         }
+
+        
     }
 
     void FixedUpdate ()
@@ -621,7 +634,7 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
         //move KeyBoard to eye
         if(IsFocusOnInputText() && !isMoveKeyBoard)
         {
-            KeyBoard.transform.position = cameraTransform.position + cameraTransform.forward*0.8f;
+            KeyBoard.transform.position = cameraTransform.position + cameraTransform.forward;
             isMoveKeyBoard = true;
         }
         if (OVRInput.Get(OVRInput.Axis1D.SecondaryHandTrigger) >= 0.99f)
@@ -643,7 +656,7 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
         }
         if(isDragKeyBoard)
         {
-            KeyBoard.transform.position = rightController.transform.position;
+            KeyBoard.transform.position = rightController.transform.position + rightController.transform.forward;
             KeyBoard.transform.rotation = rightController.transform.rotation;
         }
 
@@ -837,7 +850,7 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
         RaycastHit controllerTarget;
 
         if (Physics.Raycast(leftController.transform.position, leftController.transform.forward,
-            out controllerTarget, 2f))
+            out controllerTarget, 5f))
         {
             targetTransform = controllerTarget.transform;
         }
@@ -856,13 +869,17 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
 
             if (targetTransform.tag == "Everyone" || targetTransform.tag == "Onlyone" || targetTransform.tag == m_viewID)
             {
-                if (targetTransform.GetComponent<Grabbable>().CurColor == Color.white)
+                if (targetTransform.GetComponent<Grabbable>().CurColor == Color.white && isReadyChangeColor)
                 {
+                    isReadyChangeColor = false;
+                    time_readyChangeGOColor = 0.5f;
                     targetTransform.GetComponent<Grabbable>().SetColor(FindObjectOfType<GrabManager>().OutlineColorHighlighted);
                     targetTransformList.Add(targetTransform);
                 }
-                else
+                else if(isReadyChangeColor)
                 {
+                    isReadyChangeColor = false;
+                    time_readyChangeGOColor = 0.5f;
                     targetTransform.GetComponent<Grabbable>().ClearColor();
                     targetTransformList.Remove(targetTransform);
                 }
@@ -988,7 +1005,7 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
             //List<GameObject> outlineTargets = Camera.main.transform.GetComponent<DrawOutline>().targets;
 
             if (Physics.Raycast(rightController.transform.position, rightController.transform.forward,
-            out target, 2f))
+            out target, 5f))
             {
                 if (target.transform)
                 {

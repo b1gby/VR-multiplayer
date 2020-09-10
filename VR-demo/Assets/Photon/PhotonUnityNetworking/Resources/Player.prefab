@@ -186,7 +186,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 769445412685599771}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -1.2871994, y: 1.9708197, z: 1.2357101}
+  m_LocalPosition: {x: -0.66, y: -1.0300001, z: 1.2357101}
   m_LocalScale: {x: 0.097574, y: 0.097574, z: 0.097574}
   m_Children: []
   m_Father: {fileID: 2757597661054355098}
@@ -415,7 +415,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2081860974150095486}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -1.2871994, y: 1.9708197, z: 1.2357101}
+  m_LocalPosition: {x: -0.66, y: -1.03, z: 1.2357101}
   m_LocalScale: {x: 0.097574, y: 0.097574, z: 0.097574}
   m_Children: []
   m_Father: {fileID: 2757597661054355098}
@@ -537,7 +537,7 @@ MonoBehaviour:
   EnableBase: 0
   EnableExpressive: 1
   RecordPackets: 1
-  UseSDKPackets: 1
+  UseSDKPackets: 0
   PacketSettings:
     UpdateRate: 0.033333335
   StartWithControllers: 1

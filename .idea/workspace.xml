@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="f76e109a-8350-4bab-8146-6fb6829b1cd3" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/VR-demo/Assets/Oculus/VR/Plugins/1.52.0.meta" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/VR-demo/Assets/Oculus/VR/Plugins/1.52.0/Android.meta" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/VR-demo/Assets/Oculus/VR/Plugins/1.52.0/AndroidUniversal.meta" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/VR-demo/Assets/Oculus/VR/Plugins/1.52.0/Win.meta" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/VR-demo/Assets/Oculus/VR/Plugins/1.52.0/Win64.meta" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/VR-demo/Assets/Prefabs/KeyBoard.prefab" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/VR-demo/Assets/Prefabs/KeyBoard.prefab.meta" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/VR-demo/Assets/Scripts/KeyBoardControllerDemo.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/VR-demo/Assets/Scripts/KeyBoardControllerDemo.cs.meta" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/VR-demo/Assets/Scripts/SteamVR_TrackedObjectDemo.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/VR-demo/Assets/Scripts/SteamVR_TrackedObjectDemo.cs.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/VR-demo/.vs/VR-demo/v16/.suo" beforeDir="false" afterPath="$PROJECT_DIR$/VR-demo/.vs/VR-demo/v16/.suo" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/VR-demo/Assembly-CSharp-Editor.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/VR-demo/Assembly-CSharp-Editor.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/VR-demo/Assembly-CSharp.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/VR-demo/Assembly-CSharp.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/VR-demo/Assets/Oculus/Avatar/Plugins/Android32/libovravatarloader.so" beforeDir="false" afterPath="$PROJECT_DIR$/VR-demo/Assets/Oculus/Avatar/Plugins/Android32/libovravatarloader.so" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/VR-demo/Assets/Oculus/Avatar/Plugins/Android64/libovravatarloader.so" beforeDir="false" afterPath="$PROJECT_DIR$/VR-demo/Assets/Oculus/Avatar/Plugins/Android64/libovravatarloader.so" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/VR-demo/Assets/Oculus/Avatar/Samples/SocialStarter/Assets/Scripts/OculusPlayerController.cs.meta" beforeDir="false" afterPath="$PROJECT_DIR$/VR-demo/Assets/Oculus/Avatar/Samples/SocialStarter/Assets/Scripts/OculusPlayerController.cs.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/VR-demo/Assets/Oculus/LipSync/Models/FemaleHead_Morph/Female.fbm/melinda_DIFF.png.meta" beforeDir="false" afterPath="$PROJECT_DIR$/VR-demo/Assets/Oculus/LipSync/Models/FemaleHead_Morph/Female.fbm/melinda_DIFF.png.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/VR-demo/Assets/Oculus/LipSync/Models/FemaleHead_Morph/Materials/melinda_DIFF.mat" beforeDir="false" afterPath="$PROJECT_DIR$/VR-demo/Assets/Oculus/LipSync/Models/FemaleHead_Morph/Materials/melinda_DIFF.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/VR-demo/Assets/Oculus/LipSync/Models/FemaleHead_Morph/Materials/melinda_DIFF.mat.meta" beforeDir="false" afterPath="$PROJECT_DIR$/VR-demo/Assets/Oculus/LipSync/Models/FemaleHead_Morph/Materials/melinda_DIFF.mat.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/VR-demo/Assets/Oculus/LipSync/Plugins/Android32/libOVRLipSync.so" beforeDir="false" afterPath="$PROJECT_DIR$/VR-demo/Assets/Oculus/LipSync/Plugins/Android32/libOVRLipSync.so" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/VR-demo/Assets/Oculus/LipSync/Plugins/Android64/libOVRLipSync.so" beforeDir="false" afterPath="$PROJECT_DIR$/VR-demo/Assets/Oculus/LipSync/Plugins/Android64/libOVRLipSync.so" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/VR-demo/Assets/Oculus/LipSync/Plugins/MacOSX/OVRLipSync.bundle" beforeDir="false" afterPath="$PROJECT_DIR$/VR-demo/Assets/Oculus/LipSync/Plugins/MacOSX/OVRLipSync.bundle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/VR-demo/Assets/Oculus/LipSync/Plugins/iOS/libOVRLipSync.dylib" beforeDir="false" afterPath="$PROJECT_DIR$/VR-demo/Assets/Oculus/LipSync/Plugins/iOS/libOVRLipSync.dylib" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/VR-demo/Assets/Oculus/LipSync/Plugins/iOS/libOVRLipSyncShim.a" beforeDir="false" afterPath="$PROJECT_DIR$/VR-demo/Assets/Oculus/LipSync/Plugins/iOS/libOVRLipSyncShim.a" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/VR-demo/Assets/Oculus/SampleFramework/Core/DebugUI/Scripts/HandedInputSelector.cs" beforeDir="false" afterPath="$PROJECT_DIR$/VR-demo/Assets/Oculus/SampleFramework/Core/DebugUI/Scripts/HandedInputSelector.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/VR-demo/Assets/Oculus/SampleFramework/Core/DebugUI/Scripts/LaserPointer.cs" beforeDir="false" afterPath="$PROJECT_DIR$/VR-demo/Assets/Oculus/SampleFramework/Core/DebugUI/Scripts/LaserPointer.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/VR-demo/Assets/Oculus/SampleFramework/Core/Locomotion/Materials/TeleportLaser.mat" beforeDir="false" afterPath="$PROJECT_DIR$/VR-demo/Assets/Oculus/SampleFramework/Core/Locomotion/Materials/TeleportLaser.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/VR-demo/Assets/Oculus/VR/Plugins/1.51.0/Android/OVRPlugin.aar" beforeDir="false" afterPath="$PROJECT_DIR$/VR-demo/Assets/Oculus/VR/Plugins/1.51.0/Android/OVRPlugin.aar.disabled" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/VR-demo/Assets/Oculus/VR/Plugins/1.51.0/Android/OVRPlugin.aar.meta" beforeDir="false" afterPath="$PROJECT_DIR$/VR-demo/Assets/Oculus/VR/Plugins/1.51.0/Android/OVRPlugin.aar.disabled.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/VR-demo/Assets/Oculus/VR/Plugins/1.51.0/AndroidUniversal/OVRPlugin.aar" beforeDir="false" afterPath="$PROJECT_DIR$/VR-demo/Assets/Oculus/VR/Plugins/1.51.0/AndroidUniversal/OVRPlugin.aar.disabled" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/VR-demo/Assets/Oculus/VR/Plugins/1.51.0/AndroidUniversal/OVRPlugin.aar.meta" beforeDir="false" afterPath="$PROJECT_DIR$/VR-demo/Assets/Oculus/VR/Plugins/1.51.0/AndroidUniversal/OVRPlugin.aar.disabled.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/VR-demo/Assets/Oculus/VR/Plugins/1.51.0/Win/OVRPlugin.dll" beforeDir="false" afterPath="$PROJECT_DIR$/VR-demo/Assets/Oculus/VR/Plugins/1.51.0/Win/OVRPlugin.dll.disabled" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/VR-demo/Assets/Oculus/VR/Plugins/1.51.0/Win/OVRPlugin.dll.meta" beforeDir="false" afterPath="$PROJECT_DIR$/VR-demo/Assets/Oculus/VR/Plugins/1.51.0/Win/OVRPlugin.dll.disabled.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/VR-demo/Assets/Oculus/VR/Plugins/1.51.0/Win64/OVRPlugin.dll" beforeDir="false" afterPath="$PROJECT_DIR$/VR-demo/Assets/Oculus/VR/Plugins/1.51.0/Win64/OVRPlugin.dll.disabled" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/VR-demo/Assets/Oculus/VR/Plugins/1.51.0/Win64/OVRPlugin.dll.meta" beforeDir="false" afterPath="$PROJECT_DIR$/VR-demo/Assets/Oculus/VR/Plugins/1.51.0/Win64/OVRPlugin.dll.disabled.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/VR-demo/Assets/Oculus/VR/Scripts/Util/OVRRaycaster.cs" beforeDir="false" afterPath="$PROJECT_DIR$/VR-demo/Assets/Oculus/VR/Scripts/Util/OVRRaycaster.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/VR-demo/Assets/Photon/PhotonUnityNetworking/Resources/Player.prefab" beforeDir="false" afterPath="$PROJECT_DIR$/VR-demo/Assets/Photon/PhotonUnityNetworking/Resources/Player.prefab" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/VR-demo/Assets/Punchkeyboard/Assets/Scripts/Keyboard/Key.cs" beforeDir="false" afterPath="$PROJECT_DIR$/VR-demo/Assets/Punchkeyboard/Assets/Scripts/Keyboard/Key.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/VR-demo/Assets/Scenes/Room-demo.unity" beforeDir="false" afterPath="$PROJECT_DIR$/VR-demo/Assets/Scenes/Room-demo.unity" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/VR-demo/Assets/Scripts/CameraController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/VR-demo/Assets/Scripts/CameraController.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/VR-demo/Assets/Scripts/DisplayControllerLine.cs" beforeDir="false" afterPath="$PROJECT_DIR$/VR-demo/Assets/Scripts/DisplayControllerLine.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/VR-demo/Assets/Scripts/GameManager.cs" beforeDir="false" afterPath="$PROJECT_DIR$/VR-demo/Assets/Scripts/GameManager.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/VR-demo/Assets/Scripts/NetworkLauncher.cs" beforeDir="false" afterPath="$PROJECT_DIR$/VR-demo/Assets/Scripts/NetworkLauncher.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/VR-demo/Assets/Scripts/PlayerController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/VR-demo/Assets/Scripts/PlayerController.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/VR-demo/Oculus.Platform.Editor.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/VR-demo/Oculus.Platform.Editor.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/VR-demo/Oculus.Platform.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/VR-demo/Oculus.Platform.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/VR-demo/Oculus.VR.Editor.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/VR-demo/Oculus.VR.Editor.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/VR-demo/Oculus.VR.Scripts.Editor.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/VR-demo/Oculus.VR.Scripts.Editor.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/VR-demo/Oculus.VR.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/VR-demo/Oculus.VR.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/VR-demo/PhotonChat.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/VR-demo/PhotonChat.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/VR-demo/PhotonRealtime.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/VR-demo/PhotonRealtime.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/VR-demo/PhotonUnityNetworking.Demos.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/VR-demo/PhotonUnityNetworking.Demos.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/VR-demo/PhotonUnityNetworking.Editor.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/VR-demo/PhotonUnityNetworking.Editor.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/VR-demo/PhotonUnityNetworking.Utilities.Culling.Editor.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/VR-demo/PhotonUnityNetworking.Utilities.Culling.Editor.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/VR-demo/PhotonUnityNetworking.Utilities.PhotonPlayer.Editor.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/VR-demo/PhotonUnityNetworking.Utilities.PhotonPlayer.Editor.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/VR-demo/PhotonUnityNetworking.Utilities.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/VR-demo/PhotonUnityNetworking.Utilities.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/VR-demo/PhotonUnityNetworking.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/VR-demo/PhotonUnityNetworking.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/VR-demo/PhotonWebSocket.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/VR-demo/PhotonWebSocket.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/VR-demo/ProjectSettings/ProjectVersion.txt" beforeDir="false" afterPath="$PROJECT_DIR$/VR-demo/ProjectSettings/ProjectVersion.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/VR-demo/PunDemos.DemoHubEditor.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/VR-demo/PunDemos.DemoHubEditor.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/VR-demo/PunDemos.DemoSlotcarEditor.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/VR-demo/PunDemos.DemoSlotcarEditor.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/VR-demo/VR-demo.sln" beforeDir="false" afterPath="$PROJECT_DIR$/VR-demo/VR-demo.sln" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/VR-demo/obj/Debug/Assembly-CSharp.csprojAssemblyReference.cache" beforeDir="false" afterPath="$PROJECT_DIR$/VR-demo/obj/Debug/Assembly-CSharp.csprojAssemblyReference.cache" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/VR-demo/obj/Debug/DesignTimeResolveAssemblyReferencesInput.cache" beforeDir="false" afterPath="$PROJECT_DIR$/VR-demo/obj/Debug/DesignTimeResolveAssemblyReferencesInput.cache" afterDir="false" />
+    </list>
+    <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="ProjectFrameBounds">
+    <option name="x" value="293" />
+    <option name="y" value="58" />
+    <option name="width" value="1430" />
+    <option name="height" value="912" />
+  </component>
+  <component name="ProjectView">
+    <navigator proportions="" version="1">
+      <foldersAlwaysOnTop value="true" />
+    </navigator>
+    <panes>
+      <pane id="ProjectPane" />
+      <pane id="Scope" />
+      <pane id="PackagesPane" />
+    </panes>
+  </component>
+  <component name="PropertiesComponent">
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="aspect.path.notification.shown" value="true" />
+    <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
+    <property name="nodejs_npm_path_reset_for_default_project" value="true" />
+  </component>
+  <component name="RunDashboard">
+    <option name="ruleStates">
+      <list>
+        <RuleState>
+          <option name="name" value="ConfigurationTypeDashboardGroupingRule" />
+        </RuleState>
+        <RuleState>
+          <option name="name" value="StatusDashboardGroupingRule" />
+        </RuleState>
+      </list>
+    </option>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="f76e109a-8350-4bab-8146-6fb6829b1cd3" name="Default Changelist" comment="" />
+      <created>1599563486986</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1599563486986</updated>
+      <workItem from="1599563497153" duration="32000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TimeTrackingManager">
+    <option name="totallyTimeSpent" value="32000" />
+  </component>
+  <component name="ToolWindowManager">
+    <frame x="293" y="58" width="1430" height="912" extended-state="0" />
+    <layout>
+      <window_info id="Image Layers" />
+      <window_info id="Designer" />
+      <window_info id="UI Designer" />
+      <window_info id="Capture Tool" />
+      <window_info id="Favorites" side_tool="true" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.24963504" />
+      <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
+      <window_info anchor="bottom" id="Database Changes" />
+      <window_info anchor="bottom" id="Version Control" />
+      <window_info anchor="bottom" id="Terminal" />
+      <window_info anchor="bottom" id="Event Log" side_tool="true" />
+      <window_info anchor="bottom" id="Message" order="0" />
+      <window_info anchor="bottom" id="Find" order="1" />
+      <window_info anchor="bottom" id="Run" order="2" />
+      <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
+      <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
+      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
+      <window_info anchor="bottom" id="TODO" order="6" />
+      <window_info anchor="right" id="Palette" />
+      <window_info anchor="right" id="Theme Preview" />
+      <window_info anchor="right" id="Maven" />
+      <window_info anchor="right" id="Capture Analysis" />
+      <window_info anchor="right" id="Palette&#9;" />
+      <window_info anchor="right" id="Database" />
+      <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
+      <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
+      <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
+    </layout>
+  </component>
+</project>
