@@ -54,6 +54,13 @@ public class DisplayControllerLine : MonoBehaviourPun
 
                 GameObject eventSystem = GameObject.Find("EventSystem");
                 eventSystem.GetComponent<OVRInputModule>().rayTransform = rightController.transform;
+
+                this.transform.parent.GetComponent<PlayerController>().leftController = leftController;
+                this.transform.parent.GetComponent<PlayerController>().rightController = rightController;
+                this.transform.parent.GetComponent<PlayerController>().leftControllerSphere = controllerLeftSphere;
+                this.transform.parent.GetComponent<PlayerController>().rightControllerSphere = controllerRightSphere;
+                controllerLeftSphere.GetComponent<SphereCollider>().enabled = false;
+                controllerRightSphere.GetComponent<SphereCollider>().enabled = false;
                 isAdded = true;
             }
 
@@ -71,6 +78,7 @@ public class DisplayControllerLine : MonoBehaviourPun
 
             controllerLeftSphere.transform.position = leftController.transform.forward + leftController.transform.position;
             controllerRightSphere.transform.position = rightController.transform.forward + rightController.transform.position;
+            
 
         }
         catch

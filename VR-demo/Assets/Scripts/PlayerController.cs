@@ -92,7 +92,9 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
     private bool isMoveSnapList = false;
 
     public GameObject leftController;
+    public GameObject leftControllerSphere;
     public GameObject rightController;
+    public GameObject rightControllerSphere;
 
     private bool isOnAir = false;
 
@@ -138,6 +140,8 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
             //InputFieldCanvas.GetComponent<Canvas>().worldCamera = cameraTransform.GetChild(0).GetChild(1).GetComponent<Camera>();
             GameObject PredictionCanvas = GameObject.Find("PredictionCanvas");
             PredictionCanvas.GetComponent<Canvas>().worldCamera = cameraTransform.GetChild(0).GetChild(1).GetComponent<Camera>();
+            GameObject UIforVRTips = GameObject.Find("UIforVRTips");
+            UIforVRTips.GetComponent<Canvas>().worldCamera = cameraTransform.GetChild(0).GetChild(1).GetComponent<Camera>();
         }
         
 
@@ -582,29 +586,27 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
 
 
         
-
-
         // movement
         MovementController();
 
 
         // jump
         JumpingAndLanding();
+        
 
-
-        // pickup
-        if (Input.GetKeyDown(KeyCode.E))
-        {
-            //Debug.Log(isDragObject);
-            if (!isDragObjectWithLock && !isDragObjectWithoutLock)
-            {
-                SelectObject();
-            }
-            else
-            {
-                SelectDownObject();
-            }
-        }
+        //// pickup
+        //if (Input.GetKeyDown(KeyCode.E))
+        //{
+        //    //Debug.Log(isDragObject);
+        //    if(!isDragObjectWithLock && !isDragObjectWithoutLock)
+        //    {
+        //        SelectObject();
+        //    }
+        //    else
+        //    {
+        //        SelectDownObject();
+        //    }
+        //}
 
         // record snapshot
         RecordSnapShots();
@@ -616,31 +618,32 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
             MarkGO();
         }
 
-        //// moveGO
-        //if (OVRInput.Get(OVRInput.Axis1D.PrimaryHandTrigger) >= 0.99f)
-        //{
-        //    isMoveGO = true;
-        //}
-        //else if(OVRInput.Get(OVRInput.Axis1D.PrimaryHandTrigger) < 0.35f)
-        //{
-        //    if(isMoveGO)
-        //    {
-        //        isMoveDownGO = true;
-        //    }
-        //    isMoveGO = false;
-        //}
-        //MoveGO();
+        // moveGO
+        if (OVRInput.Get(OVRInput.Axis1D.PrimaryHandTrigger) >= 0.99f)
+        {
+            isMoveGO = true;
+        }
+        else if(OVRInput.Get(OVRInput.Axis1D.PrimaryHandTrigger) < 0.35f)
+        {
+            if(isMoveGO)
+            {
+                isMoveDownGO = true;
+            }
+            isMoveGO = false;
+        }
+        MoveGO();
 
         //move KeyBoard to eye
         if(IsFocusOnInputText() && !isMoveKeyBoard)
         {
-            KeyBoard.transform.position = cameraTransform.position + cameraTransform.forward;
+            KeyBoard.transform.position = cameraTransform.position + cameraTransform.forward + cameraTransform.up * 0.3f;
             isMoveKeyBoard = true;
         }
+
         if (OVRInput.Get(OVRInput.Axis1D.SecondaryHandTrigger) >= 0.99f)
         {
             RaycastHit target;
-            rightController = FindObjectOfType<DisplayControllerLine>().rightController;
+            //rightController = FindObjectOfType<DisplayControllerLine>().rightController;
             if (Physics.Raycast(rightController.transform.position, rightController.transform.forward, out target, 100f))
             {
                 if(target.transform.tag=="Key")
@@ -805,7 +808,7 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
         m_currentH = Mathf.Lerp(m_currentH, h, Time.deltaTime * m_interpolation);
 
         Vector3 direction;
-        if(OVRInput.Get(OVRInput.Axis1D.SecondaryHandTrigger) >= 0.99f)
+        if(OVRInput.Get(OVRInput.Axis1D.SecondaryHandTrigger) >= 0.99f && !isDragKeyBoard)
         {
             direction = cameraTransform.up * m_currentV + cameraTransform.right * m_currentH;
             m_rigidBody.useGravity = false;
@@ -844,19 +847,21 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
 
     private void MarkGO()
     {
-        leftController = FindObjectOfType<DisplayControllerLine>().leftController;
-        rightController = FindObjectOfType<DisplayControllerLine>().rightController;
+        //leftController = FindObjectOfType<DisplayControllerLine>().leftController;
+        //rightController = FindObjectOfType<DisplayControllerLine>().rightController;
         
         RaycastHit controllerTarget;
 
         if (Physics.Raycast(leftController.transform.position, leftController.transform.forward,
-            out controllerTarget, 5f))
+            out controllerTarget, 2f))
         {
             targetTransform = controllerTarget.transform;
         }
 
         if(targetTransform)
         {
+            leftControllerSphere.GetComponent<SphereCollider>().enabled = false;
+            rightControllerSphere.GetComponent<SphereCollider>().enabled = false;
             // select other people is controlling
             int parseTag;
             if (int.TryParse(targetTransform.tag, out parseTag))
@@ -864,6 +869,7 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
                 if (parseTag != int.Parse(m_viewID) && parseTag >= 1001 && parseTag <= 10000)
                 {
                     isSelectedTip.GetComponent<Timer>().startTimer(3f);
+                    isSelectedTip.transform.position = cameraTransform.position + cameraTransform.forward * 4f + cameraTransform.up * 2f;
                 }
             }
 
@@ -902,6 +908,7 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
                     if (dispatcher.hasLock)
                     {
                         hasLockTip.GetComponent<Timer>().startTimer(3f);
+                        hasLockTip.transform.position = cameraTransform.position + cameraTransform.forward * 4f + cameraTransform.up * 2f;
                     }
                     else
                     {
@@ -960,7 +967,7 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
         {
             foreach (Transform transform in targetTransformList)
             {
-                if (targetTransform.tag == "Onlyone")
+                if (targetTransform.tag == "Onlyone" && !targetTransform.GetComponent<LockDispatcher>().hasLock)
                 {
                     // find OnlyoneContainer
                     Transform containerT = targetTransform.parent;
@@ -995,8 +1002,11 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
     {
         if (OVRInput.GetDown(OVRInput.RawButton.B) && !is_takingSnapShots)
         {
-            leftController = FindObjectOfType<DisplayControllerLine>().leftController;
-            rightController = FindObjectOfType<DisplayControllerLine>().rightController;
+            //leftController = FindObjectOfType<DisplayControllerLine>().leftController;
+            //rightController = FindObjectOfType<DisplayControllerLine>().rightController;
+
+            leftControllerSphere.GetComponent<SphereCollider>().enabled = false;
+            rightControllerSphere.GetComponent<SphereCollider>().enabled = false;
 
             GameObject eventSystem = GameObject.Find("EventSystem");
             eventSystem.GetComponent<OVRInputModule>().rayTransform = rightController.transform;
@@ -1416,14 +1426,17 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
             child.GetComponent<Text>().text = (time / 60).ToString() + ":" + string.Format("{0:d2}", (time % 60));
         }
     }
-
-
+    
     private bool IsFocusOnInputText()
     {
         if (EventSystem.current.currentSelectedGameObject == null)
             return false;
         if (EventSystem.current.currentSelectedGameObject.GetComponent<InputField>() != null)
+        {
+            leftControllerSphere.GetComponent<SphereCollider>().enabled = true;
+            rightControllerSphere.GetComponent<SphereCollider>().enabled = true;
             return true;
+        }
         return false;
     }
 }
