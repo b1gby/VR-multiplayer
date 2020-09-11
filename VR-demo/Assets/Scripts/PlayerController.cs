@@ -251,7 +251,7 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
             GameObject[] sendTargets = GameObject.FindGameObjectsWithTag(m_viewID);
 
             //if(targetTransform!=null)
-            if (sendTargets.Length != 0 && isMoveGO)
+            if (sendTargets.Length != 0 && (isMoveGO || isDragObjectWithoutLock))
             {
                 stream.SendNext("syncSelectTarget:" + sendTargets.Length.ToString());
                 foreach (GameObject per_sendTarget in sendTargets)
@@ -592,13 +592,13 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
 
         // jump
         JumpingAndLanding();
-        
+
 
         //// pickup
         //if (Input.GetKeyDown(KeyCode.E))
         //{
         //    //Debug.Log(isDragObject);
-        //    if(!isDragObjectWithLock && !isDragObjectWithoutLock)
+        //    if (!isDragObjectWithLock && !isDragObjectWithoutLock)
         //    {
         //        SelectObject();
         //    }
@@ -1000,21 +1000,21 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
 
     private void RecordSnapShots()
     {
-        if (OVRInput.GetDown(OVRInput.RawButton.B) && !is_takingSnapShots)
+        if ((OVRInput.GetDown(OVRInput.RawButton.B)||Input.GetKeyDown(KeyCode.G)) && !is_takingSnapShots)
         {
             //leftController = FindObjectOfType<DisplayControllerLine>().leftController;
             //rightController = FindObjectOfType<DisplayControllerLine>().rightController;
 
-            leftControllerSphere.GetComponent<SphereCollider>().enabled = false;
-            rightControllerSphere.GetComponent<SphereCollider>().enabled = false;
+            //leftControllerSphere.GetComponent<SphereCollider>().enabled = false;
+            //rightControllerSphere.GetComponent<SphereCollider>().enabled = false;
 
-            GameObject eventSystem = GameObject.Find("EventSystem");
-            eventSystem.GetComponent<OVRInputModule>().rayTransform = rightController.transform;
+            //GameObject eventSystem = GameObject.Find("EventSystem");
+            //eventSystem.GetComponent<OVRInputModule>().rayTransform = rightController.transform;
 
             RaycastHit target;
             //List<GameObject> outlineTargets = Camera.main.transform.GetComponent<DrawOutline>().targets;
 
-            if (Physics.Raycast(rightController.transform.position, rightController.transform.forward,
+            if (Physics.Raycast(cameraTransform.transform.position, cameraTransform.transform.forward,
             out target, 5f))
             {
                 if (target.transform)
@@ -1062,7 +1062,7 @@ public class PlayerController : MonoBehaviourPun, IPunObservable
             }
         }
 
-        if (OVRInput.GetUp(OVRInput.RawButton.B) && is_takingSnapShots)
+        if ((OVRInput.GetUp(OVRInput.RawButton.B) || Input.GetKeyDown(KeyCode.G)) && is_takingSnapShots)
         {
             DateTime nowTime = DateTime.Now.ToLocalTime();
             newCreateSnap = new GameObject(nowTime.ToString("yyyy-MM-dd HH:mm:ss"));

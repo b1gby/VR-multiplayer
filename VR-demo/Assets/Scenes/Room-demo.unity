@@ -22600,7 +22600,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   rayTransform: {fileID: 0}
-  m_Cursor: {fileID: 0}
+  m_Cursor: {fileID: 114392411270743252}
   joyPadClickButton: 2097152
   gazeClickKey: 32
   performSphereCastForGazepointer: 0
